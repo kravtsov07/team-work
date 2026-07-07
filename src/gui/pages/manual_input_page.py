@@ -1,8 +1,13 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QLineEdit, QListWidget
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
 
 
@@ -27,7 +32,7 @@ class ManualInputPage(QWidget):
         hint = QLabel(
             "Для перемножения цепочки матриц важны только их размеры.\n"
             "Укажите высоту (кол-во строк) и ширину (кол-во столбцов) "
-            "очередной матрицы и нажмите \"+\", чтобы добавить её в цепочку."
+            'очередной матрицы и нажмите "+", чтобы добавить её в цепочку.'
         )
         hint.setWordWrap(True)
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -105,6 +110,12 @@ class ManualInputPage(QWidget):
 
         rows = int(self.height_edit.text())
         cols = int(self.width_edit.text())
+
+        if self.matrices and rows != self.matrices[-1][1]:
+            self.status_label.setText("Данные матрицы невозможно перемножить")
+            self.status_label.setStyleSheet("color: red;")
+            return
+
         self.matrices.append((rows, cols))
         self.matrices_list_widget.addItem(
             f"Матрица {len(self.matrices)}: {rows} x {cols}"
@@ -124,30 +135,20 @@ class ManualInputPage(QWidget):
         self.matrices_list_widget.takeItem(self.matrices_list_widget.count() - 1)
         self._update_status()
 
-    def _verify_chain(self):
-        """Проверяет, что цепочку матриц можно перемножить: число столбцов
-        каждой матрицы должно совпадать с числом строк следующей за ней.
-        Возвращает (is_valid, error_message)."""
-        # TODO: написать функцию
-        return True
-
     def _update_status(self):
-        is_valid = self._verify_chain()
         enough_matrices = len(self.matrices) >= 2
 
         if not self.matrices:
-            self.status_label.setText(
-                "Добавьте хотя бы 2 матрицы для перемножения."
-            )
+            self.status_label.setText("Добавьте хотя бы 2 матрицы для перемножения.")
             self.status_label.setStyleSheet("color: gray;")
-        elif not is_valid:
-            self.status_label.setText("Данные матрицы невозможно перемножить")
-            self.status_label.setStyleSheet("color: red;")
         elif not enough_matrices:
             self.status_label.setText("Нужно хотя бы 2 матрицы.")
             self.status_label.setStyleSheet("color: gray;")
+        else:
+            self.status_label.setText("Можно считать.")
+            self.status_label.setStyleSheet("color: green;")
 
-        self.next_button.setEnabled(enough_matrices and is_valid)
+        self.next_button.setEnabled(enough_matrices)
 
     def _on_next_clicked(self):
         if not self.next_button.isEnabled():
