@@ -6,6 +6,7 @@ from src.back.GA import generate_dimensions, genetic_algorithm
 @dataclass
 class PlottingData:
     x: list[int]
+    target_cost: int
     best_cost: list[int]
     mean_cost: list[float]
 
@@ -29,6 +30,7 @@ def get_plot_data(matrices: list[dict]) -> PlottingData:
 
     return PlottingData(
         x=[snap.generation for snap in history],
+        target_cost=min_cost,
         best_cost=[snap.best_cost for snap in history],
         mean_cost=[snap.mean_cost for snap in history],
     )

@@ -35,7 +35,7 @@ class GraphPage(QWidget):
         pg.setConfigOption("background", "w")
         pg.setConfigOption("foreground", "k")
         self.plot_widget = pg.PlotWidget()
-        self.plot_widget.setLabel("left", "Значение")
+        self.plot_widget.setLabel("left", "Приближенность к целевому")
         self.plot_widget.setLabel("bottom", "Поколение")
         self.plot_widget.showGrid(x=True, y=True)
         layout.addWidget(self.plot_widget)
@@ -67,9 +67,19 @@ class GraphPage(QWidget):
         plot_data = get_plot_data(self.matrices)
 
         self.plot_widget.clear()
+        
+        # график лучшего значения
         self.plot_widget.plot(
             plot_data.x,
-            plot_data.best_cost,
+            [plot_data.target_cost / best_cost for best_cost in plot_data.best_cost],
             pen=pg.mkPen(width=2),
-            symbol="o",
+            name="Лучшее значение поколения"
+        )
+        
+        # график среднего значения
+        self.plot_widget.plot(
+            plot_data.x,
+            [plot_data.target_cost / mean_cost for mean_cost in plot_data.mean_cost],
+            pen=pg.mkPen(color='r', width=2),
+            name="Среднее значение поколения"
         )
