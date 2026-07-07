@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPushButton,
     QRadioButton,
+    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
@@ -23,7 +24,7 @@ class Choice(Enum):
 class ChoicePage(QWidget):
     """Страница выбора вида входных данных"""
 
-    next_clicked = Signal(object, str)  # (Choice, file_path)
+    next_clicked = Signal(object, str, int)  # (Choice, file_path, sample_size)
     back_clicked = Signal()
 
     def __init__(self, parent=None):
@@ -50,21 +51,41 @@ class ChoicePage(QWidget):
 
         for choice in Choice:
             radio = QRadioButton(choices[choice.value])
-            layout.addWidget(radio)
 
             self.choice_group.addButton(radio, choice.value)
             self.radio_buttons.append(radio)
 
-            if choice == Choice.CHOICE_FILE:
+            if choice == Choice.CHOICE_RANDOM:
+                row = QHBoxLayout()
+                row.addWidget(radio)
+
+                self.sample_size = QSpinBox()
+                self.sample_size.setRange(1, 1000)
+                self.sample_size.setValue(10)
+                self.sample_size.setFixedWidth(70)
+                self.sample_size.hide()
+
+                row.addWidget(self.sample_size)
+                row.addStretch()
+
+                layout.addLayout(row)
+
+                radio.toggled.connect(self.sample_size.setVisible)
+
+            elif choice == Choice.CHOICE_FILE:
+                layout.addWidget(radio)
+
                 file_layout = QHBoxLayout()
                 file_layout.addSpacing(30)
 
                 self.file_path_edit = QLineEdit()
                 self.file_path_edit.setReadOnly(True)
                 self.file_path_edit.setPlaceholderText("Файл не выбран")
+                self.file_path_edit.hide()
                 file_layout.addWidget(self.file_path_edit, 1)
 
                 browse_button = QPushButton("Выбрать файл")
+                browse_button.hide()
                 browse_button.clicked.connect(self._browse_file)
                 file_layout.addWidget(browse_button)
 
@@ -76,8 +97,8 @@ class ChoicePage(QWidget):
                     )
                 )
 
-                self.file_path_edit.setVisible(False)
-                browse_button.setVisible(False)
+            else:
+                layout.addWidget(radio)
 
         self.radio_buttons[0].setChecked(True)
 
@@ -122,4 +143,12 @@ class ChoicePage(QWidget):
         if selected_choice == Choice.CHOICE_FILE and not self.selected_file_path:
             return
 
-        self.next_clicked.emit(selected_choice, self.selected_file_path)
+        sample_size = (
+            self.sample_size.value() if selected_choice == Choice.CHOICE_RANDOM else 0
+        )
+
+        self.next_clicked.emit(
+            selected_choice,
+            self.selected_file_path,
+            sample_size,
+        )

@@ -5,7 +5,7 @@ from random import randint
 
 def generate_sample_file(
     file_path: str,
-    matrix_count: int = 1000,
+    matrix_count: int = 100,
     min_size: int = 5,
     max_size: int = 50,
 ) -> None:
@@ -17,4 +17,4 @@ def generate_sample_file(
 
 
 if __name__ == "__main__":
-    generate_sample_file("matrices.txt", matrix_count=1000)
+    generate_sample_file("matrices.txt", matrix_count=100)
