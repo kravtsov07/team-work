@@ -18,7 +18,6 @@ def get_dimensions(matrices: list[dict]) -> list[int]:
 
 
 def get_plot_data(matrices: list[dict]) -> PlottingData:
-    print(matrices)
     dimensions = get_dimensions(matrices)
 
     history, min_cost = genetic_algorithm(
