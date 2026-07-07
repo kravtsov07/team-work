@@ -1,7 +1,8 @@
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
-from src.back.helpers import get_data_from_file, get_random_matrices
+from src.back.helpers import get_data_from_file
+from src.back.GA import generate_dimensions
 from src.gui.pages.choice_page import Choice, ChoicePage
 from src.gui.pages.graph_page import GraphPage
 from src.gui.pages.manual_input_page import ManualInputPage
@@ -70,7 +71,7 @@ class MainWindow(QMainWindow):
             self.graph_page.set_data(data)
             self._go_to(self.graph_page)
         else:
-            data = get_random_matrices()
+            data = generate_dimensions()
             self.graph_page.set_data(data)
             self._go_to(self.graph_page)
 

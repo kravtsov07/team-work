@@ -47,7 +47,7 @@ def calculate_min_cost(dimensions: list[int]) -> int:
 
 
 def generate_dimensions(
-    dim_size: int = 100, min_size: int = 10, max_size: int = 50
+    dim_size: int = 20, min_size: int = 10, max_size: int = 50
 ) -> list[int]:
 
     # генерирует случайные размерности матриц

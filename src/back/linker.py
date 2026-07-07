@@ -18,8 +18,12 @@ def get_dimensions(matrices: list[list[int]]) -> list[int]:
     return dims
 
 
-def get_plot_data(matrices: list[list[int]]) -> PlottingData:
-    dimensions = get_dimensions(matrices)
+def get_plot_data(matrices: list[list[int]] | list[int]) -> PlottingData:
+    
+    if all(isinstance(x, int) for x in matrices) and isinstance(matrices, list):
+        dimensions = matrices
+    else:
+        dimensions = get_dimensions(matrices)
 
     history, min_cost = genetic_algorithm(
         population_size=100,
