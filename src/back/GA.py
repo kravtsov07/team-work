@@ -210,8 +210,14 @@ def genetic_algorithm(
     # делаем заданное колво эволюций
     for step_idx in range(steps):
         gen_number = step_idx + cur_generation_offset + 1
+        
+        # элитизм - лучшего всегда оставляем
+        elite_ind = copy.deepcopy(history[-1].best_individual)
+        
         population = selection(population, dimensions, tournament_size, p_m, p_c)
 
+        population[0] = elite_ind
+        
         costs = [calculate_cost(dimensions, ind) for ind in population]
         best_cost = min(costs)
 
@@ -235,7 +241,8 @@ def genetic_algorithm(
 
 if __name__ == "__main__":
     # TODO пофиксить скрещивание или мутацию, чтобы сходился при dim_size > 20
-    dim_size = 20
+    # для идеала надо менять принцип кодирования индивидов, но чет западло
+    dim_size = 30
     dim_test4 = generate_dimensions(dim_size=dim_size, min_size=5, max_size=50)
     history, min_cost = genetic_algorithm(
         population_size=100, steps=200, dim_size=dim_size, dimensions=dim_test4
