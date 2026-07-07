@@ -69,7 +69,7 @@ def tournament(
     return min(candidates, key=lambda ind: calculate_cost(dim, ind))
 
 
-def mutate(individual: list[int], p_m: float = None):
+def mutate(individual: list[int], p_m: float | None = None):
     ind_size = len(individual)
     if p_m is None:
         p_m = 1 / ind_size
@@ -121,7 +121,7 @@ def genetic_algorithm(
     population_size: int,
     max_generations: int,
     dim_size: int,
-    dimensions: list[int] = None,
+    dimensions: list[int] | None = None,
 ):
 
     if not dimensions:
