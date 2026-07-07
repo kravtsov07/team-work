@@ -1,5 +1,6 @@
 import random as rd
-
+from dataclasses import dataclass
+import copy
 """ 
 n размерностей
 n - 1 матриц
@@ -7,7 +8,19 @@ n - 2 операций
 
 """
 
-def calculate_min_cost(dimensions: list[int]) -> int:
+@dataclass
+class GenerationSnapshot:
+    generation: int                 # номер поколения
+    best_cost: int                  # лучшая стоимость
+    mean_cost: float                # средняя стоимость
+    best_individual: list[int]      # хромосома лучшего решения
+    population: list[list[int]]
+
+def calculate_min_cost(
+    dimensions: list[int]
+) -> int:
+    
+    # считает точную минимальную стоимость перебором
     n = len(dimensions) - 1
     if n <= 0:
         return 0
@@ -27,107 +40,207 @@ def calculate_min_cost(dimensions: list[int]) -> int:
                     
     return dp[0][n - 1]
 
-def generate_dimensions(dim_size: int = 100, min_size: int = 1, max_size: int = 10):
+def generate_dimensions(
+    dim_size: int = 100,
+    min_size: int = 10,
+    max_size: int = 50
+) -> list[int]:
+    
+    # генерирует случайные размерности матриц
+    # dim = [10,20,30,40,50] - матрицы [10x20,20x30,30x40,40x50]
     return [rd.randint(min_size, max_size) for _ in range(dim_size)]
 
-def generate_population(pop_size: int, ind_size: int) -> list[list[int]]:
+def generate_population(
+    pop_size: int,
+    ind_size: int
+) -> list[list[int]]:
+    
+    # создает популяцию
     return [generate_individual(ind_size) for _ in range(pop_size)]
 
-def generate_individual(ind_size: int):
+def generate_individual(
+    ind_size: int
+) -> list[int]:
+    
+    # создает случайную особь (порядок перемножения матриц)
+    # [2, 0, 0] т.е. сначала перемножатся 2 и 3, затем 0 и 1 и т.д 
+    # номер перемножаемой матрицы в текущем списке размерностей(гены)
+    # ind_size - 3 - i потому что с каждой итерацией колво размерностей уменьшается на 1
     return [rd.randint(0, ind_size - 3 - i) for i in range(ind_size - 2)]
 
-def is_valid_individual(individual: list[int], n: int) -> bool:
+def is_valid_individual(
+    individual: list[int],
+    n: int
+) -> bool:
+    
+    # проверка по принципу генерации
     if len(individual) != n - 2:
         return False
         
     return all(0 <= val <= (n - 3 - i) for i, val in enumerate(individual))
 
-def calculate_cost(dimensions: list[int], individual: list[int]):
+def calculate_cost(
+    dimensions: list[int],
+    individual: list[int]
+) -> int:
+    
+    # считает колво операций по особи
     cost = 0
     cur_dim = dimensions.copy()
+    
     for i in range(len(individual)):
-        n = individual[i]
+        n = individual[i] # номер матрицы
+        #перемножение двух матриц cur_dim[n]xcur_dim[n+1] * cur_dim[n+1]xcur_dim[n+2]
         cost += cur_dim[n] * cur_dim[n + 1] * cur_dim[n + 2]
+        # остается матрица размерности cur_dim[n]xcur_dim[n+2]
         cur_dim.pop(n + 1)
     return cost
 
-def tournament(population: list[list[int]], dim: list[int], tournament_size: int = 3) -> list[int]:
+def tournament(
+    population: list[list[int]],
+    dim: list[int],
+    tournament_size: int = 3
+) -> list[int]:
+
+    # выбирается лучший вариант из трех участников турика
+    if tournament_size is None:
+        tournament_size = 3
     candidates = rd.choices(population, k=tournament_size)
     return min(candidates, key=lambda ind: calculate_cost(dim, ind))
 
-def mutate(individual: list[int], p_m: float = None):
+def mutate(
+    individual: list[int],
+    p_m: float = None
+) -> list[int]:
+    
+    # мутация - новый случайный возможный ген (номер перемножаемой матрицы)
     ind_size = len(individual)
     if p_m == None:
-        p_m = 1 / ind_size
-        
+        p_m = 1 / ind_size if ind_size != 0 else 0.1
+    
+    # по каждому гену проходимся и с шансом меняем
     for i in range(ind_size):
         if rd.random() < p_m:
             individual[i] = rd.randint(0, ind_size - 1 - i)
             
     return individual
 
-def crossover(first_parent: list[int], second_parent: list[int]):
-    point = rd.randint(1, len(first_parent) - 1)
-    first_child = first_parent[:point] + second_parent[point:] 
-    second_child = second_parent[:point] + first_parent[point:]
+def crossover(
+    first_parent: list[int],
+    second_parent: list[int]
+) -> tuple[list[int], list[int]]:
+    
+    # метод скрещивания - одноточечное
+    # выдает корректных детей потому что гены задаются одинаково для обмениваемых позиций =>
+    # не будет некорректного гена
+    i = rd.randint(1, len(first_parent) - 1)
     return (
-        first_child,
-        second_child
+        first_parent[:i] + second_parent[i:],
+        second_parent[:i] + first_parent[i:]
     )
 
-def selection(population: list[list[int]], dim: list[int], tournament_size: int = 3, p_c: float = 0.8) -> list[list[int]]:
+def selection(
+    population: list[list[int]],
+    dim: list[int],
+    tournament_size: int = 3,
+    p_m: float = 0.1,
+    p_c: float = 0.8
+) -> list[list[int]]:
+    
+    # селекция) 
     next_population = []
     len_next_population = 0
     
+    # пока популяция не фуловая
     while len_next_population < len(population):
+        # выбор двух родителей независимо
         first_parent = tournament(population, dim, tournament_size)
         second_parent = tournament(population, dim, tournament_size)
 
+        # скрещивание с шансом
+        if p_c is None:
+            p_c = 0.8
+            
         if rd.random() < p_c:
             first_child, second_child = crossover(first_parent, second_parent)
         else:
             first_child = first_parent.copy()
             second_child = second_parent.copy()
         
-        next_population.append(mutate(first_child))
+        # добавляем с мутацией
+        next_population.append(mutate(first_child, p_m))
         len_next_population += 1
         
+        # чтобы не переполнить при нечетном размере популяции
         if len_next_population < len(population):
-            next_population.append(mutate(second_child))
+            next_population.append(mutate(second_child, p_m))
             len_next_population += 1
         
     return next_population
 
-def genetic_algorithm(population_size: int,
-                      max_generations: int,
-                      dim_size: int,
-                      dimensions: list[int] = None,
-                      ):
-    
+def genetic_algorithm(
+    population_size: int,
+    dim_size: int,
+    steps: int,
+    tournament_size: int = None,
+    p_m: float = None,
+    p_c: float = None,
+    population: list[list[int]] | None = None,
+    dimensions: list[int] | None = None,
+    cur_generation_offset: int = 0,
+) -> tuple[list[GenerationSnapshot], int]:
+
     if not dimensions:
         dimensions = generate_dimensions(dim_size)
     
-    best_cost = float('inf')
     min_cost = calculate_min_cost(dimensions)
-    print(min_cost)
-    generations = 0
-    population = generate_population(population_size, dim_size)
-    while generations < max_generations:
-        population = selection(population, dimensions, )
-        best_ind = min(population, key=lambda ind: calculate_cost(dimensions, ind))
-        best_cost = calculate_cost(dimensions, best_ind)
-        if best_cost == min_cost:
-            print(f"Найдено лучшее решение: {best_ind}, стоимость: {best_cost}")
-            break
-        all_cost = 0
-        for ind in population:
-            all_cost += calculate_cost(dimensions, ind)
-        
-        mean_cost = all_cost / population_size
-        print(f"Поколение {generations + 1}: Лучший - {best_cost}, Средний - {mean_cost}")
-        generations += 1
-        
     
+    history: list[GenerationSnapshot] = []
+    
+    # если не задана популяция
+    if population is None:
+        population = generate_population(population_size, dim_size)
+        
+        costs = [calculate_cost(dimensions, ind) for ind in population]
+        best_cost = min(costs)
+        
+        history.append(GenerationSnapshot(
+            generation=0,
+            best_cost=best_cost,
+            mean_cost=sum(costs) / population_size,
+            best_individual=population[costs.index(best_cost)],
+            population=population
+        ))
+    
+    # делаем заданное колво эволюций
+    for step_idx in range(steps):
+        gen_number = step_idx + cur_generation_offset + 1
+        population = selection(population, dimensions, tournament_size, p_m, p_c)
+        
+        costs = [calculate_cost(dimensions, ind) for ind in population]
+        best_cost = min(costs)
+        
+        history.append(GenerationSnapshot(
+            generation=gen_number,
+            best_cost=best_cost,
+            mean_cost=sum(costs) / population_size,
+            best_individual=population[costs.index(best_cost)],
+            population=copy.deepcopy(population)
+        ))
+        
+        if best_cost == min_cost:
+            break
+        
+    return history, min_cost
+        
 if __name__ == "__main__":
-    dim_test4 = generate_dimensions(dim_size=45, min_size=10, max_size=150)
-    genetic_algorithm(population_size=500, max_generations=400, dim_size=45, dimensions=dim_test4)
+    dim_test4 = generate_dimensions(dim_size=10, min_size=10, max_size=50)
+    history, min_cost = genetic_algorithm(population_size=50, steps=200, dim_size=10, dimensions=dim_test4)
+    
+    last_snap = history[-1]
+    
+    print(f"Финальное поколение: {last_snap.generation}")
+    print(f"Ожидаемый результат: {min_cost}")
+    print(f"Лучший кост: {last_snap.best_cost}")
+    print(f"Средний кост: {last_snap.mean_cost}")
+    print(f"Лучшее решение: {last_snap.best_individual}")
