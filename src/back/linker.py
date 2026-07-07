@@ -10,14 +10,14 @@ class PlottingData:
     mean_cost: list[float]
 
 
-def get_dimensions(matrices: list[dict]) -> list[int]:
-    dims = [matrices[0]["rows"]]
+def get_dimensions(matrices: list[list[int]]) -> list[int]:
+    dims = [matrices[0][0]]
     for matrix in matrices:
-        dims.append(matrix["cols"])
+        dims.append(matrix[1])
     return dims
 
 
-def get_plot_data(matrices: list[dict]) -> PlottingData:
+def get_plot_data(matrices: list[list[int]]) -> PlottingData:
     dimensions = get_dimensions(matrices)
 
     history, min_cost = genetic_algorithm(
