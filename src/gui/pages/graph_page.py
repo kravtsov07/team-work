@@ -59,7 +59,7 @@ class GraphPage(QWidget):
         button_layout.addStretch()
         layout.addLayout(button_layout)
 
-    def set_data(self, matrices: list[dict]):
+    def set_data(self, matrices: list[list[int]]):
         self.matrices = matrices
         self._refresh_plot()
 

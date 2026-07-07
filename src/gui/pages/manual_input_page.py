@@ -153,5 +153,4 @@ class ManualInputPage(QWidget):
     def _on_next_clicked(self):
         if not self.next_button.isEnabled():
             return
-        payload = [{"rows": rows, "cols": cols} for rows, cols in self.matrices]
-        self.next_clicked.emit(payload)
+        self.next_clicked.emit(self.matrices)
