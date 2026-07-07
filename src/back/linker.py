@@ -22,7 +22,7 @@ def get_plot_data(matrices: list[dict]) -> PlottingData:
     dimensions = get_dimensions(matrices)
 
     history, min_cost = genetic_algorithm(
-        population_size=50,
+        population_size=100,
         steps=200,
         dim_size=len(dimensions),
         dimensions=dimensions,
@@ -44,6 +44,7 @@ def get_random_plot_data() -> PlottingData:
 
     return PlottingData(
         x=[snap.generation for snap in history],
+        target_cost=min_cost,
         best_cost=[snap.best_cost for snap in history],
         mean_cost=[snap.mean_cost for snap in history],
     )

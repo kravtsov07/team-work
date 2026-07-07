@@ -72,7 +72,7 @@ class GraphPage(QWidget):
         self.plot_widget.plot(
             plot_data.x,
             [plot_data.target_cost / best_cost for best_cost in plot_data.best_cost],
-            pen=pg.mkPen(width=2),
+            pen=pg.mkPen(color='dodgerblue', width=3),
             name="Лучшее значение поколения"
         )
         
@@ -80,6 +80,13 @@ class GraphPage(QWidget):
         self.plot_widget.plot(
             plot_data.x,
             [plot_data.target_cost / mean_cost for mean_cost in plot_data.mean_cost],
-            pen=pg.mkPen(color='r', width=2),
+            pen=pg.mkPen(color='lightcoral', width=3),
             name="Среднее значение поколения"
+        )
+        
+        self.plot_widget.plot(
+            plot_data.x,
+            [1] * len(plot_data.x),
+            pen=pg.mkPen(color='crimson', width=2),
+            name="Целевое отношение"
         )

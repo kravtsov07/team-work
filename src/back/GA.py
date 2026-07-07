@@ -234,9 +234,11 @@ def genetic_algorithm(
 
 
 if __name__ == "__main__":
-    dim_test4 = generate_dimensions(dim_size=10, min_size=10, max_size=50)
+    # TODO пофиксить скрещивание или мутацию, чтобы сходился при dim_size > 20
+    dim_size = 20
+    dim_test4 = generate_dimensions(dim_size=dim_size, min_size=5, max_size=50)
     history, min_cost = genetic_algorithm(
-        population_size=50, steps=200, dim_size=10, dimensions=dim_test4
+        population_size=100, steps=200, dim_size=dim_size, dimensions=dim_test4
     )
 
     last_snap = history[-1]
