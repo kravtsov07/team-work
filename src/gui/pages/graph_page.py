@@ -20,17 +20,9 @@ class GraphPage(QWidget):
     def _setup_ui(self):
         layout = QVBoxLayout(self)
 
-        title = QLabel("Визуализация")
+        title = QLabel("Динамика сходимости генетического алгоритма")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
-
-        note = QLabel(
-            "Случайные данные для демонстрации виджета графика.\n"
-            "В дальнейшем здесь будет отображаться реальный результат "
-            "работы генетического алгоритма."
-        )
-        note.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(note)
 
         pg.setConfigOption("background", "w")
         pg.setConfigOption("foreground", "k")
@@ -40,7 +32,7 @@ class GraphPage(QWidget):
         self.plot_widget.showGrid(x=True, y=True)
         layout.addWidget(self.plot_widget)
 
-        regenerate_button = QPushButton("Сгенерировать заново")
+        regenerate_button = QPushButton("Перезапустить алгоритм для тех же данных")
         regenerate_button.clicked.connect(self._refresh_plot)
         layout.addWidget(regenerate_button)
 
@@ -67,6 +59,7 @@ class GraphPage(QWidget):
         plot_data = get_plot_data(self.matrices)
 
         self.plot_widget.clear()
+        self.plot_widget.addLegend(offset=(10, 10))
         
         # график лучшего значения
         self.plot_widget.plot(
@@ -87,6 +80,6 @@ class GraphPage(QWidget):
         self.plot_widget.plot(
             plot_data.x,
             [1] * len(plot_data.x),
-            pen=pg.mkPen(color='crimson', width=2),
+            pen=pg.mkPen(color='magenta', width=3),
             name="Целевое отношение"
         )
