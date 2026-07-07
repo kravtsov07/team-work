@@ -32,7 +32,9 @@ class ManualInputPage(QWidget):
         hint = QLabel(
             "Для перемножения цепочки матриц важны только их размеры.\n"
             "Укажите высоту (кол-во строк) и ширину (кол-во столбцов) "
-            'очередной матрицы и нажмите "+", чтобы добавить её в цепочку.'
+            "очередной матрицы и нажмите '+', чтобы добавить её в цепочку.\n"
+            "Обратите внимание, что в каждый момент цепочка должна быть валидной!\n"
+            "Пример. A: 11 x 2, B: 2 x 3, C: 4 x 11 и так далее"
         )
         hint.setWordWrap(True)
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -102,6 +104,7 @@ class ManualInputPage(QWidget):
             return False
 
     def _update_add_button_state(self):
+        """Делает кнопку "+" активной, только если заданы правильные измерения матрицы"""
         self.add_button.setEnabled(self._current_dimensions_are_valid())
 
     def _on_add_clicked(self):
@@ -112,14 +115,21 @@ class ManualInputPage(QWidget):
         cols = int(self.width_edit.text())
 
         if self.matrices and rows != self.matrices[-1][1]:
-            self.status_label.setText("Данные матрицы невозможно перемножить")
-            self.status_label.setStyleSheet("color: red;")
-            return
-
-        self.matrices.append((rows, cols))
-        self.matrices_list_widget.addItem(
-            f"Матрица {len(self.matrices)}: {rows} x {cols}"
-        )
+            if self.matrices and cols == self.matrices[0][0]:
+                """Если матрицу можно добавить в начало -- добавим в начало"""
+                self.matrices = [(rows, cols)] + self.matrices
+                self.matrices_list_widget.insertItem(
+                    0, f"Матрица {len(self.matrices)}: {rows} x {cols}"
+                )
+            else:
+                self.status_label.setText("Данные матрицы невозможно перемножить")
+                self.status_label.setStyleSheet("color: red;")
+                return
+        else:
+            self.matrices.append((rows, cols))
+            self.matrices_list_widget.addItem(
+                f"Матрица {len(self.matrices)}: {rows} x {cols}"
+            )
 
         self.height_edit.clear()
         self.width_edit.clear()
