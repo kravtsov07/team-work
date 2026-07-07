@@ -1,27 +1,48 @@
-from src.back.GA import genetic_algorithm
+from dataclasses import dataclass
+
+from src.back.GA import generate_dimensions, genetic_algorithm
 
 
-def get_dimensions(matrices: list[list[int]]) -> list[int]:
-    dims = [matrices[0][0]]
+@dataclass
+class PlottingData:
+    x: list[int]
+    best_cost: list[int]
+    mean_cost: list[float]
+
+
+def get_dimensions(matrices: list[dict]) -> list[int]:
+    dims = [matrices[0]["rows"]]
     for matrix in matrices:
-        dims.append(matrix[1])
-
+        dims.append(matrix["cols"])
     return dims
 
 
-def get_plot_data(matrices: list[list[int]]):
+def get_plot_data(matrices: list[dict]) -> PlottingData:
+    print(matrices)
     dimensions = get_dimensions(matrices)
+
     history, min_cost = genetic_algorithm(
         population_size=50,
         steps=200,
         dim_size=len(dimensions),
-        dimensions=dimensions,  # TODO: подумать об оптимизации поколений.
+        dimensions=dimensions,
     )
 
-    plot_data = {
-        "x": [snap.generation for snap in history],
-        "best_cost": [snap.best_cost for snap in history],
-        "mean_cost": [snap.mean_cost for snap in history],
-    }
+    return PlottingData(
+        x=[snap.generation for snap in history],
+        best_cost=[snap.best_cost for snap in history],
+        mean_cost=[snap.mean_cost for snap in history],
+    )
 
-    return plot_data
+
+def get_random_plot_data() -> PlottingData:
+    dim_test4 = generate_dimensions(dim_size=10, min_size=10, max_size=50)
+    history, min_cost = genetic_algorithm(
+        population_size=50, steps=200, dim_size=10, dimensions=dim_test4
+    )
+
+    return PlottingData(
+        x=[snap.generation for snap in history],
+        best_cost=[snap.best_cost for snap in history],
+        mean_cost=[snap.mean_cost for snap in history],
+    )

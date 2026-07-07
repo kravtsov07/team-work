@@ -1,11 +1,13 @@
-import random
-
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 import pyqtgraph as pg
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
+
+from src.back.linker import get_plot_data
+
 
 class GraphPage(QWidget):
     """Страница с графиком"""
+
     # TODO: интерфейс для пошагового выполнения алгоритма
 
     next_clicked = Signal()
@@ -37,11 +39,9 @@ class GraphPage(QWidget):
         self.plot_widget.setLabel("bottom", "Поколение")
         self.plot_widget.showGrid(x=True, y=True)
         layout.addWidget(self.plot_widget)
-        # TODO: реальный алгоритм
-        self._plot_random_data()
 
         regenerate_button = QPushButton("Сгенерировать заново")
-        regenerate_button.clicked.connect(self._plot_random_data)
+        regenerate_button.clicked.connect(self._refresh_plot)
         layout.addWidget(regenerate_button)
 
         layout.addStretch()
@@ -59,10 +59,17 @@ class GraphPage(QWidget):
         button_layout.addStretch()
         layout.addLayout(button_layout)
 
-    def _plot_random_data(self):
-        x = list(range(20))
-        y = [random.uniform(0, 100) for _ in x]
+    def set_data(self, matrices: list[list[int]]):
+        self.matrices = matrices
+        self._refresh_plot()
+
+    def _refresh_plot(self):
+        plot_data = get_plot_data(self.matrices)
+        print(plot_data)
         self.plot_widget.clear()
         self.plot_widget.plot(
-            x, y, pen=pg.mkPen(width=2), symbol="o"
+            plot_data.x,
+            plot_data.best_cost,
+            pen=pg.mkPen(width=2),
+            symbol="o",
         )
