@@ -1,11 +1,11 @@
 import random as rd
 from dataclasses import dataclass
 import copy
+
 """ 
 n размерностей
 n - 1 матриц
 n - 2 операций
-
 """
 
 @dataclass
@@ -189,7 +189,7 @@ def genetic_algorithm(
     dimensions: list[int] | None = None,
     cur_generation_offset: int = 0,
 ) -> tuple[list[GenerationSnapshot], int]:
-
+    
     if not dimensions:
         dimensions = generate_dimensions(dim_size)
     
@@ -234,8 +234,8 @@ def genetic_algorithm(
     return history, min_cost
         
 if __name__ == "__main__":
-    dim_test4 = generate_dimensions(dim_size=10, min_size=10, max_size=50)
-    history, min_cost = genetic_algorithm(population_size=50, steps=200, dim_size=10, dimensions=dim_test4)
+    dim_test4 = generate_dimensions(dim_size=50, min_size=10, max_size=50)
+    history, min_cost = genetic_algorithm(population_size=200, steps=1000, dim_size=50, dimensions=dim_test4)
     
     last_snap = history[-1]
     
