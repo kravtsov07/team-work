@@ -17,7 +17,7 @@ def get_data_from_file(file_path: str) -> list[list[int]]:
 
 
 def get_random_matrices(
-    matrix_count: int = 50,
+    matrix_count: int = 20,
     min_size: int = 5,
     max_size: int = 50,
 ) -> list[list[int]]:
