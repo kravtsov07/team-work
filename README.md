@@ -14,9 +14,10 @@
 
 # Дизайн(Грубая схема)
 ## Главное меню
-![alt text](image.png)
+<img width="1086" height="1280" alt="image" src="https://github.com/user-attachments/assets/6cb30ed1-7f58-4e99-88b1-6ab6b85839cb" />
+
 
 ## Всплывающее окно
-![alt text](image-1.png)
+<img width="1280" height="772" alt="image" src="https://github.com/user-attachments/assets/8dca98a4-6834-4be7-b9df-8c390248f8ce" />
 
 🪆
