@@ -135,8 +135,8 @@ def selection(
     population: list[list[int]],
     dim: list[int],
     tournament_size: int = 3,
-    p_m: float = 0.1,
-    p_c: float = 0.8,
+    p_m: float | None = 0.1,
+    p_c: float | None = 0.8,
 ) -> list[list[int]]:
 
     # селекция)
@@ -175,9 +175,9 @@ def genetic_algorithm(
     population_size: int,
     dim_size: int,
     steps: int,
-    tournament_size: int = None,
-    p_m: float = None,
-    p_c: float = None,
+    tournament_size: int | None = None,
+    p_m: float | None = None,
+    p_c: float | None = None,
     population: list[list[int]] | None = None,
     dimensions: list[int] | None = None,
     cur_generation_offset: int = 0,
@@ -221,7 +221,9 @@ def genetic_algorithm(
                 best_cost=best_cost,
                 mean_cost=sum(costs) / population_size,
                 best_individual=population[costs.index(best_cost)],
-                population=copy.deepcopy(population),
+                population=copy.deepcopy(
+                    population
+                ),  # TODO: потом убрать. Держит кучу огромных списков
             )
         )
 
