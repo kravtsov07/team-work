@@ -1,6 +1,7 @@
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
+from src.back.file_helpers import get_data_from_file
 from src.gui.pages.choice_page import Choice, ChoicePage
 from src.gui.pages.graph_page import GraphPage
 from src.gui.pages.manual_input_page import ManualInputPage
@@ -63,13 +64,14 @@ class MainWindow(QMainWindow):
 
         if selected_id is Choice.CHOICE_MANUAL:
             self._go_to(self.manual_input_page)
-        else:
+        elif selected_id is Choice.CHOICE_FILE:
             # TODO: запуск обработчика
+            data = get_data_from_file(file_path)
+            self.graph_page.set_data(data)
             self._go_to(self.graph_page)
 
     def _on_manual_matrices_ready(self, matrices):
         self.manual_matrices = matrices
-        # TODO: запуск генетического алгоритма
         self.graph_page.set_data(matrices)
 
         self._go_to(self.graph_page)
