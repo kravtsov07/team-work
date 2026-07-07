@@ -1,8 +1,13 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QLineEdit, QListWidget
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
 
 
@@ -105,6 +110,12 @@ class ManualInputPage(QWidget):
 
         rows = int(self.height_edit.text())
         cols = int(self.width_edit.text())
+
+        if self.matrices and rows != self.matrices[-1][1]:
+            self.status_label.setText("Данные матрицы невозможно перемножить")
+            self.status_label.setStyleSheet("color: red;")
+            return
+
         self.matrices.append((rows, cols))
         self.matrices_list_widget.addItem(
             f"Матрица {len(self.matrices)}: {rows} x {cols}"
