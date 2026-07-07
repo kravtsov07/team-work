@@ -1,11 +1,10 @@
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
-from src.back.helpers import get_data_from_file
-from src.back.GA import generate_dimensions
 from src.gui.pages.choice_page import Choice, ChoicePage
 from src.gui.pages.graph_page import GraphPage
 from src.gui.pages.manual_input_page import ManualInputPage
+from src.gui.pages.preview_page import PreviewPage
 from src.gui.pages.welcome_page import WelcomePage
 
 
@@ -19,7 +18,6 @@ class MainWindow(QMainWindow):
         # Текущее состояние выбора режима работы
         self.selected_choice_id = None
         self.selected_file_path = ""
-        self.manual_matrices = None
 
         self._setup_pages()
         self._setup_navigation()
@@ -37,12 +35,14 @@ class MainWindow(QMainWindow):
         self.choice_page = ChoicePage()
         self.manual_input_page = ManualInputPage()
         self.graph_page = GraphPage()
+        self.preview_page = PreviewPage()
 
         for page in (
             self.welcome_page,
             self.choice_page,
             self.manual_input_page,
             self.graph_page,
+            self.preview_page,
         ):
             self.stacked_widget.addWidget(page)
 
@@ -53,30 +53,29 @@ class MainWindow(QMainWindow):
         self.choice_page.next_clicked.connect(self._on_choice_made)
         self.choice_page.back_clicked.connect(self._go_back)
 
-        self.manual_input_page.next_clicked.connect(self._on_manual_matrices_ready)
+        self.manual_input_page.next_clicked.connect(self._on_matrices_ready)
         self.manual_input_page.back_clicked.connect(self._go_back)
+
+        self.preview_page.next_clicked.connect(self._on_matrices_ready)
+        self.preview_page.back_clicked.connect(self._go_back)
 
         self.graph_page.next_clicked.connect(self._on_graph_next)
         self.graph_page.back_clicked.connect(self._go_back)
 
-    def _on_choice_made(self, selected_id, file_path):
+    def _on_choice_made(self, selected_id, file_path, sample_size):
         self.selected_choice_id = selected_id
         self.selected_file_path = file_path
 
         if selected_id is Choice.CHOICE_MANUAL:
             self._go_to(self.manual_input_page)
         elif selected_id is Choice.CHOICE_FILE:
-            # TODO: запуск обработчика
-            data = get_data_from_file(file_path)
-            self.graph_page.set_data(data)
-            self._go_to(self.graph_page)
+            self.preview_page.set_file_path(self.selected_file_path)
+            self._go_to(self.preview_page)
         else:
-            data = generate_dimensions()
-            self.graph_page.set_data(data)
-            self._go_to(self.graph_page)
+            self.preview_page.set_sample_size(int(sample_size))
+            self._go_to(self.preview_page)
 
-    def _on_manual_matrices_ready(self, matrices):
-        self.manual_matrices = matrices
+    def _on_matrices_ready(self, matrices):
         self.graph_page.set_data(matrices)
 
         self._go_to(self.graph_page)
