@@ -1,18 +1,29 @@
+from enum import Enum
+
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QRadioButton, QButtonGroup, QFileDialog, QLineEdit
+    QButtonGroup,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QRadioButton,
+    QVBoxLayout,
+    QWidget,
 )
 
-CHOICE_RANDOM = 0
-CHOICE_FILE = 1
-CHOICE_MANUAL = 2
+
+class Choice(Enum):
+    CHOICE_RANDOM = 0
+    CHOICE_FILE = 1
+    CHOICE_MANUAL = 2
 
 
 class ChoicePage(QWidget):
     """Страница выбора вида входных данных"""
 
-    next_clicked = Signal(int, str)   # (selected_id, file_path)
+    next_clicked = Signal(object, str)  # (Choice, file_path)
     back_clicked = Signal()
 
     def __init__(self, parent=None):
@@ -36,13 +47,15 @@ class ChoicePage(QWidget):
         ]
 
         self.radio_buttons = []
-        for i, choice in enumerate(choices):
-            radio = QRadioButton(choice)
+
+        for choice in Choice:
+            radio = QRadioButton(choices[choice.value])
             layout.addWidget(radio)
-            self.choice_group.addButton(radio, i)
+
+            self.choice_group.addButton(radio, choice.value)
             self.radio_buttons.append(radio)
 
-            if i == CHOICE_FILE:
+            if choice == Choice.CHOICE_FILE:
                 file_layout = QHBoxLayout()
                 file_layout.addSpacing(30)
 
@@ -58,14 +71,15 @@ class ChoicePage(QWidget):
                 layout.addLayout(file_layout)
 
                 radio.toggled.connect(
-                    lambda checked, edit=self.file_path_edit, browse=browse_button:
-                    self._toggle_file_selector(checked, edit, browse)
+                    lambda checked, edit=self.file_path_edit, browse=browse_button: (
+                        self._toggle_file_selector(checked, edit, browse)
+                    )
                 )
+
                 self.file_path_edit.setVisible(False)
                 browse_button.setVisible(False)
 
-        if self.choice_group.buttons():
-            self.choice_group.buttons()[0].setChecked(True)
+        self.radio_buttons[0].setChecked(True)
 
         layout.addStretch()
 
@@ -85,6 +99,7 @@ class ChoicePage(QWidget):
     def _toggle_file_selector(self, checked, file_edit, browse_button):
         file_edit.setVisible(checked)
         browse_button.setVisible(checked)
+
         if not checked:
             self.selected_file_path = ""
             file_edit.clear()
@@ -98,13 +113,13 @@ class ChoicePage(QWidget):
         if file_dialog.exec():
             selected_files = file_dialog.selectedFiles()
             if selected_files:
-                file_path = selected_files[0]
-                self.selected_file_path = file_path
-                self.file_path_edit.setText(file_path)
+                self.selected_file_path = selected_files[0]
+                self.file_path_edit.setText(self.selected_file_path)
 
     def _on_next_clicked(self):
-        selected_id = self.choice_group.checkedId()
-        if selected_id == CHOICE_FILE and not self.selected_file_path:
+        selected_choice = Choice(self.choice_group.checkedId())
+
+        if selected_choice == Choice.CHOICE_FILE and not self.selected_file_path:
             return
 
-        self.next_clicked.emit(selected_id, self.selected_file_path)
+        self.next_clicked.emit(selected_choice, self.selected_file_path)

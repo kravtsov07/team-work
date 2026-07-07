@@ -1,10 +1,10 @@
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
-from src.gui.pages.welcome_page import WelcomePage
-from src.gui.pages.choice_page import ChoicePage, CHOICE_RANDOM, CHOICE_FILE, CHOICE_MANUAL
-from src.gui.pages.manual_input_page import ManualInputPage
+from src.gui.pages.choice_page import Choice, ChoicePage
 from src.gui.pages.graph_page import GraphPage
+from src.gui.pages.manual_input_page import ManualInputPage
+from src.gui.pages.welcome_page import WelcomePage
 
 
 class MainWindow(QMainWindow):
@@ -45,10 +45,8 @@ class MainWindow(QMainWindow):
             self.stacked_widget.addWidget(page)
 
     def _setup_navigation(self):
-        self.welcome_page.quit_clicked.connect(QCoreApplication.instance().quit)
-        self.welcome_page.next_clicked.connect(
-            lambda: self._go_to(self.choice_page)
-        )
+        self.welcome_page.quit_clicked.connect(QCoreApplication.instance().quit)  # type: ignore
+        self.welcome_page.next_clicked.connect(lambda: self._go_to(self.choice_page))
 
         self.choice_page.next_clicked.connect(self._on_choice_made)
         self.choice_page.back_clicked.connect(self._go_back)
@@ -63,7 +61,7 @@ class MainWindow(QMainWindow):
         self.selected_choice_id = selected_id
         self.selected_file_path = file_path
 
-        if selected_id == CHOICE_MANUAL:
+        if selected_id is Choice.CHOICE_MANUAL:
             self._go_to(self.manual_input_page)
         else:
             # TODO: запуск обработчика
@@ -72,6 +70,8 @@ class MainWindow(QMainWindow):
     def _on_manual_matrices_ready(self, matrices):
         self.manual_matrices = matrices
         # TODO: запуск генетического алгоритма
+        self.graph_page.set_data(matrices)
+
         self._go_to(self.graph_page)
 
     def _on_graph_next(self):
