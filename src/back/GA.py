@@ -223,7 +223,7 @@ def genetic_algorithm(
                 best_individual=population[costs.index(best_cost)],
                 population=copy.deepcopy(
                     population
-                ),  # TODO: потом убрать. Держит кучу огромных списков
+                ),
             )
         )
 
