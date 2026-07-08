@@ -214,7 +214,7 @@ def genetic_algorithm(
 
 if __name__ == "__main__":
     # TODO пофиксить скрещивание или мутацию, чтобы сходился при dim_size > 20
-    # для идеала надо менять принцип кодирования индивидов, но чет западло
+    # для идеала надо менять принцип кодирования индивидов, но чет западло)
     dim_size = 30
     dim_test4 = dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
     history, min_cost = genetic_algorithm(
