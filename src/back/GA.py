@@ -1,6 +1,7 @@
 import copy
 import random as rd
 from dataclasses import dataclass
+from src.back.helpers import get_random_matrices, pairs_to_dimensions
 
 """ 
 n размерностей
@@ -44,15 +45,6 @@ def calculate_min_cost(dimensions: list[int]) -> int:
                     dp[i][j] = cost
 
     return dp[0][n - 1]
-
-
-def generate_dimensions(
-    dim_size: int = 20, min_size: int = 10, max_size: int = 50
-) -> list[int]:
-
-    # генерирует случайные размерности матриц
-    # dim = [10,20,30,40,50] - матрицы [10x20,20x30,30x40,40x50]
-    return [rd.randint(min_size, max_size) for _ in range(dim_size)]
 
 
 def generate_population(pop_size: int, ind_size: int) -> list[list[int]]:
@@ -184,7 +176,7 @@ def genetic_algorithm(
 ) -> tuple[list[GenerationSnapshot], int]:
 
     if not dimensions:
-        dimensions = generate_dimensions(dim_size)
+        dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
 
     min_cost = calculate_min_cost(dimensions)
 
@@ -243,7 +235,7 @@ if __name__ == "__main__":
     # TODO пофиксить скрещивание или мутацию, чтобы сходился при dim_size > 20
     # для идеала надо менять принцип кодирования индивидов, но чет западло
     dim_size = 30
-    dim_test4 = generate_dimensions(dim_size=dim_size, min_size=5, max_size=50)
+    dim_test4 = dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
     history, min_cost = genetic_algorithm(
         population_size=100, steps=200, dim_size=dim_size, dimensions=dim_test4
     )
