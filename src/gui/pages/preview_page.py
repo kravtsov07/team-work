@@ -8,8 +8,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from src.back.GA import generate_dimensions
-from src.back.helpers import dimensions_to_pairs, get_data_from_file
+from src.back.helpers import get_random_matrices, get_data_from_file
 
 
 class PreviewPage(QWidget):
@@ -75,17 +74,15 @@ class PreviewPage(QWidget):
             self.matrices_list_widget.addItem(f"{e}")
 
     def set_sample_size(self, sample_size: int):
-        self.sample_size = sample_size + 1
-        dimensions = generate_dimensions(dim_size=self.sample_size)
-        self.matrices = dimensions_to_pairs(dimensions)
+        self.sample_size = sample_size
+        self.matrices = get_random_matrices(matrix_count=self.sample_size)
 
         self.retry_button.show()
         self.add_text(self.matrices)
         self.next_button.setEnabled(True)
 
     def retry_clicked(self):
-        dimensions = generate_dimensions(dim_size=self.sample_size)
-        self.matrices = dimensions_to_pairs(dimensions)
+        self.matrices = get_random_matrices(matrix_count=self.sample_size)
         self.matrices_list_widget.clear()
         self.add_text(self.matrices)
 

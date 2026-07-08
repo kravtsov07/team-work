@@ -1,6 +1,7 @@
 import copy
 import random as rd
 from dataclasses import dataclass
+from src.back.helpers import get_random_matrices, pairs_to_dimensions
 
 """ 
 n размерностей
@@ -46,15 +47,6 @@ def calculate_min_cost(dimensions: list[int]) -> int:
     return dp[0][n - 1]
 
 
-def generate_dimensions(
-    dim_size: int = 20, min_size: int = 10, max_size: int = 50
-) -> list[int]:
-
-    # генерирует случайные размерности матриц
-    # dim = [10,20,30,40,50] - матрицы [10x20,20x30,30x40,40x50]
-    return [rd.randint(min_size, max_size) for _ in range(dim_size)]
-
-
 def generate_population(pop_size: int, ind_size: int) -> list[list[int]]:
 
     # создает популяцию
@@ -85,12 +77,11 @@ def calculate_cost(dimensions: list[int], individual: list[int]) -> int:
     cost = 0
     cur_dim = dimensions.copy()
 
-    for i in range(len(individual)):
-        n = individual[i]  # номер матрицы
+    for idx in individual:
         # перемножение двух матриц cur_dim[n]xcur_dim[n+1] * cur_dim[n+1]xcur_dim[n+2]
-        cost += cur_dim[n] * cur_dim[n + 1] * cur_dim[n + 2]
+        cost += cur_dim[idx] * cur_dim[idx + 1] * cur_dim[idx + 2]
         # остается матрица размерности cur_dim[n]xcur_dim[n+2]
-        cur_dim.pop(n + 1)
+        cur_dim.pop(idx + 1)
     return cost
 
 
@@ -98,7 +89,7 @@ def tournament(
     population: list[list[int]], dim: list[int], tournament_size: int = 3
 ) -> list[int]:
 
-    # выбирается лучший вариант из трех участников турика
+    # выбирается лучший вариант из трех' участников турика
     if tournament_size is None:
         tournament_size = 3
     candidates = rd.choices(population, k=tournament_size)
@@ -142,16 +133,16 @@ def selection(
     # селекция)
     next_population = []
     len_next_population = 0
+    
+    # скрещивание с шансом
+    if p_c is None:
+        p_c = 0.8
 
     # пока популяция не фуловая
     while len_next_population < len(population):
         # выбор двух родителей независимо
         first_parent = tournament(population, dim, tournament_size)
         second_parent = tournament(population, dim, tournament_size)
-
-        # скрещивание с шансом
-        if p_c is None:
-            p_c = 0.8
 
         if rd.random() < p_c:
             first_child, second_child = crossover(first_parent, second_parent)
@@ -184,7 +175,7 @@ def genetic_algorithm(
 ) -> tuple[list[GenerationSnapshot], int]:
 
     if not dimensions:
-        dimensions = generate_dimensions(dim_size)
+        dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
 
     min_cost = calculate_min_cost(dimensions)
 
@@ -194,56 +185,38 @@ def genetic_algorithm(
     if population is None:
         population = generate_population(population_size, dim_size)
 
-        costs = [calculate_cost(dimensions, ind) for ind in population]
-        best_cost = min(costs)
-
-        history.append(
-            GenerationSnapshot(
-                generation=0,
-                best_cost=best_cost,
-                mean_cost=sum(costs) / population_size,
-                best_individual=population[costs.index(best_cost)],
-                population=population,
-            )
-        )
-
     # делаем заданное колво эволюций
     for step_idx in range(steps):
         gen_number = step_idx + cur_generation_offset + 1
         
-        # элитизм - лучшего всегда оставляем
-        elite_ind = copy.deepcopy(history[-1].best_individual)
-        
-        population = selection(population, dimensions, tournament_size, p_m, p_c)
-
-        population[0] = elite_ind
-        
         costs = [calculate_cost(dimensions, ind) for ind in population]
         best_cost = min(costs)
-
+        best_ind = population[costs.index(best_cost)].copy()
+        
         history.append(
             GenerationSnapshot(
                 generation=gen_number,
                 best_cost=best_cost,
                 mean_cost=sum(costs) / population_size,
-                best_individual=population[costs.index(best_cost)],
-                population=copy.deepcopy(
-                    population
-                ),
+                best_individual=best_ind.copy(),
+                population=[ind.copy() for ind in population],
             )
         )
-
+        
         if best_cost == min_cost:
             break
+        
+        population = selection(population, dimensions, tournament_size, p_m, p_c)
+        population[0] = best_ind
 
     return history, min_cost
 
 
 if __name__ == "__main__":
     # TODO пофиксить скрещивание или мутацию, чтобы сходился при dim_size > 20
-    # для идеала надо менять принцип кодирования индивидов, но чет западло
+    # для идеала надо менять принцип кодирования индивидов, но чет западло)
     dim_size = 30
-    dim_test4 = generate_dimensions(dim_size=dim_size, min_size=5, max_size=50)
+    dim_test4 = dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
     history, min_cost = genetic_algorithm(
         population_size=100, steps=200, dim_size=dim_size, dimensions=dim_test4
     )

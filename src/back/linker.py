@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from src.back.GA import generate_dimensions, genetic_algorithm
-
+from src.back.GA import genetic_algorithm
+from src.back.helpers import pairs_to_dimensions, get_random_matrices
 
 @dataclass
 class PlottingData:
@@ -10,20 +10,9 @@ class PlottingData:
     best_cost: list[int]
     mean_cost: list[float]
 
-
-def get_dimensions(matrices: list[list[int]]) -> list[int]:
-    dims = [matrices[0][0]]
-    for matrix in matrices:
-        dims.append(matrix[1])
-    return dims
-
-
-def get_plot_data(matrices: list[list[int]] | list[int]) -> PlottingData:
+def get_plot_data(matrices: list[list[int]]) -> PlottingData:
     
-    if all(isinstance(x, int) for x in matrices) and isinstance(matrices, list):
-        dimensions = matrices
-    else:
-        dimensions = get_dimensions(matrices)
+    dimensions = pairs_to_dimensions(matrices)
 
     history, min_cost = genetic_algorithm(
         population_size=100,
@@ -41,9 +30,10 @@ def get_plot_data(matrices: list[list[int]] | list[int]) -> PlottingData:
 
 
 def get_random_plot_data() -> PlottingData:
-    dim_test4 = generate_dimensions(dim_size=10, min_size=10, max_size=50)
+    dim_size = 20
+    dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
     history, min_cost = genetic_algorithm(
-        population_size=50, steps=200, dim_size=10, dimensions=dim_test4
+        population_size=100, steps=200, dim_size=dim_size, dimensions=dimensions
     )
 
     return PlottingData(
