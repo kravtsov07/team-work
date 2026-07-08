@@ -46,6 +46,21 @@ def calculate_min_cost(dimensions: list[int]) -> int:
 
     return dp[0][n - 1]
 
+def greedy_cost(dimensions: list[int]) -> int:
+    dims = dimensions.copy()
+    cost = 0
+
+    while len(dims) > 2:
+        best_i = min(
+            range(len(dims) - 2),
+            key=lambda i: dims[i] * dims[i + 1] * dims[i + 2],
+        )
+
+        cost += dims[best_i] * dims[best_i + 1] * dims[best_i + 2]
+        dims.pop(best_i + 1)
+
+    return cost
+
 
 def generate_population(pop_size: int, ind_size: int) -> list[list[int]]:
 
@@ -177,8 +192,18 @@ def genetic_algorithm(
     if not dimensions:
         dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
 
-    min_cost = calculate_min_cost(dimensions)
-
+    
+    if len(dimensions) < 32:
+        # точное значение лучшего решения
+        min_cost = calculate_min_cost(dimensions)
+    else:
+        # верхняя оценка =>
+        # если график лучшего индивида га выше линии target то алгоритм норм отработал
+        
+        # при больших колвах матриц нужны большие популяции и много поколений
+        # для того чтобы алгоритм мог отработать нормально
+        min_cost = greedy_cost(dimensions)
+    
     history: list[GenerationSnapshot] = []
 
     # если не задана популяция
@@ -203,8 +228,8 @@ def genetic_algorithm(
             )
         )
         
-        if best_cost == min_cost:
-            break
+        """ if best_cost <= min_cost:
+            break """
         
         population = selection(population, dimensions, tournament_size, p_m, p_c)
         population[0] = best_ind
