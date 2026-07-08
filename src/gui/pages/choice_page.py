@@ -60,8 +60,8 @@ class ChoicePage(QWidget):
                 row.addWidget(radio)
 
                 self.sample_size = QSpinBox()
-                self.sample_size.setRange(1, 1000)
-                self.sample_size.setValue(10)
+                self.sample_size.setRange(3, 1000)
+                self.sample_size.setValue(20)
                 self.sample_size.setFixedWidth(100)
                 self.sample_size.hide()
 

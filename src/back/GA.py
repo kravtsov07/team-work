@@ -62,10 +62,10 @@ def greedy_cost(dimensions: list[int]) -> int:
     return cost
 
 
-def generate_population(pop_size: int, ind_size: int) -> list[list[int]]:
+def generate_population(pop_size: int, dim_size: int) -> list[list[int]]:
 
     # создает популяцию
-    return [generate_individual(ind_size) for _ in range(pop_size)]
+    return [generate_individual(dim_size - 2) for _ in range(pop_size)]
 
 
 def generate_individual(ind_size: int) -> list[int]:
@@ -74,7 +74,7 @@ def generate_individual(ind_size: int) -> list[int]:
     # [2, 0, 0] т.е. сначала перемножатся 2 и 3, затем 0 и 1 и т.д
     # номер перемножаемой матрицы в текущем списке размерностей(гены)
     # ind_size - 3 - i потому что с каждой итерацией колво размерностей уменьшается на 1
-    return [rd.randint(0, ind_size - 3 - i) for i in range(ind_size - 2)]
+    return [rd.randint(0, ind_size - 1 - i) for i in range(ind_size)]
 
 
 def is_valid_individual(individual: list[int], n: int) -> bool:
@@ -153,8 +153,18 @@ def selection(
     if p_c is None:
         p_c = 0.8
 
+    len_old_population = len(population)
+    
+    count_new_ind = int(len_old_population*0.1) + 1
+    ind_size = len(population[0])
+    
+    # пока хз
+    """ for _ in range(count_new_ind - 1):
+        next_population.append(generate_individual(ind_size=ind_size))
+        len_next_population += 1 """
+    
     # пока популяция не фуловая
-    while len_next_population < len(population):
+    while len_next_population < len_old_population:
         # выбор двух родителей независимо
         first_parent = tournament(population, dim, tournament_size)
         second_parent = tournament(population, dim, tournament_size)
@@ -170,10 +180,10 @@ def selection(
         len_next_population += 1
 
         # чтобы не переполнить при нечетном размере популяции
-        if len_next_population < len(population):
+        if len_next_population < len_old_population:
             next_population.append(mutate(second_child, p_m))
             len_next_population += 1
-
+    
     return next_population
 
 
@@ -192,12 +202,11 @@ def genetic_algorithm(
     if not dimensions:
         dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
 
-    
     if len(dimensions) < 32:
         # точное значение лучшего решения
         min_cost = calculate_min_cost(dimensions)
     else:
-        # верхняя оценка =>
+        # верхняя оценка - цена полученная жадным алгоритмом =>
         # если график лучшего индивида га выше линии target то алгоритм норм отработал
         
         # при больших колвах матриц нужны большие популяции и много поколений
@@ -231,25 +240,10 @@ def genetic_algorithm(
         """ if best_cost <= min_cost:
             break """
         
-        population = selection(population, dimensions, tournament_size, p_m, p_c)
+        population = selection(population, dimensions, tournament_size, 0.01, p_c)
         population[0] = best_ind
 
     return history, min_cost
 
-
-if __name__ == "__main__":
-    # TODO пофиксить скрещивание или мутацию, чтобы сходился при dim_size > 20
-    # для идеала надо менять принцип кодирования индивидов, но чет западло)
-    dim_size = 30
-    dim_test4 = dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
-    history, min_cost = genetic_algorithm(
-        population_size=100, steps=200, dim_size=dim_size, dimensions=dim_test4
-    )
-
-    last_snap = history[-1]
-
-    print(f"Финальное поколение: {last_snap.generation}")
-    print(f"Ожидаемый результат: {min_cost}")
-    print(f"Лучший кост: {last_snap.best_cost}")
-    print(f"Средний кост: {last_snap.mean_cost}")
-    print(f"Лучшее решение: {last_snap.best_individual}")
+# TODO пофиксить, чтобы сходился при dim_size > 50
+# для идеала надо менять принцип кодирования индивидов, но чет западло)
