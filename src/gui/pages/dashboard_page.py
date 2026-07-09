@@ -38,9 +38,10 @@ class DashboardPage(QWidget):
         left_layout.addWidget(self.param_setter)
 
         button_layout = QHBoxLayout()
-        self.generate_button = QPushButton("Посчитать")
+        self.generate_button = QPushButton("Запустить алгоритм")
+        self.generate_button.setStyleSheet("background-color: green")
         self.generate_button.clicked.connect(self._on_generate_clicked)
-        self.refresh_button = QPushButton("Очистить")
+        self.refresh_button = QPushButton("Значения по умолчанию")
         self.refresh_button.clicked.connect(self._on_refresh_clicked)
 
         button_layout.addWidget(self.refresh_button)
