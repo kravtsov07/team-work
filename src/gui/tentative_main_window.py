@@ -1,7 +1,8 @@
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
-from gui.pages.welcome_page import WelcomePage
+from src.gui.pages.dashboard_page import DashboardPage
+from src.gui.pages.welcome_page import WelcomePage
 
 
 class MainWindow(QMainWindow):
@@ -21,7 +22,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget = central_stack
 
         self.welcome_page = WelcomePage()
-        # self.dashboard_page = DashboardPage()
+        self.dashboard_page = DashboardPage()
 
         for page in (self.welcome_page, self.dashboard_page):
             self.stacked_widget.addWidget(page)
