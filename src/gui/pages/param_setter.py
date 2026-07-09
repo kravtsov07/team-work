@@ -1,52 +1,52 @@
 from dataclasses import dataclass
 
-from PySide6.QtWidgets import QFormLayout, QGroupBox, QSpinBox
+from PySide6.QtWidgets import QDoubleSpinBox, QFormLayout, QGroupBox, QSpinBox
 
 
 @dataclass
 class Params:
-    first: int
-    second: int
-    third: int
-    fourth: int
+    population_size: int
+    steps: int
+    mutation_rate: float
+    crossover_rate: float
 
 
-class ParamSetter(QGroupBox):
-    def __init__(self):
-        super().__init__()
+class GAParamsPanel(QGroupBox):
+    """Настройки генетического алгоритма."""
+
+    def __init__(self, parent=None):
+        super().__init__("Параметры генетического алгоритма", parent)
         self._setup_ui()
 
     def _setup_ui(self):
-        form_layout = QFormLayout()
+        form = QFormLayout(self)
 
-        self.first_param = QSpinBox()
-        self.first_param.setValue(100)
-        self.first_param.setRange(1, 200)
-        form_layout.addRow("Lorem One", self.first_param)
-        self.setLayout(form_layout)
+        self.population_spin = QSpinBox()
+        self.population_spin.setRange(10, 2000)
+        self.population_spin.setValue(100)
+        form.addRow("Размер популяции:", self.population_spin)
 
-        self.second_param = QSpinBox()
-        self.second_param.setValue(100)
-        self.second_param.setRange(1, 200)
-        form_layout.addRow("Lorem Two", self.second_param)
-        self.setLayout(form_layout)
+        self.generations_spin = QSpinBox()
+        self.generations_spin.setRange(10, 5000)
+        self.generations_spin.setValue(200)
+        form.addRow("Число поколений:", self.generations_spin)
 
-        self.third_param = QSpinBox()
-        self.third_param.setValue(100)
-        self.third_param.setRange(1, 200)
-        form_layout.addRow("Lorem Three", self.third_param)
-        self.setLayout(form_layout)
+        self.mutation_spin = QDoubleSpinBox()
+        self.mutation_spin.setRange(0.0, 1.0)
+        self.mutation_spin.setSingleStep(0.01)
+        self.mutation_spin.setValue(0.05)
+        form.addRow("Вероятность мутации:", self.mutation_spin)
 
-        self.fourth_param = QSpinBox()
-        self.fourth_param.setValue(100)
-        self.fourth_param.setRange(1, 200)
-        form_layout.addRow("Lorem Four", self.fourth_param)
-        self.setLayout(form_layout)
+        self.crossover_spin = QDoubleSpinBox()
+        self.crossover_spin.setRange(0.0, 1.0)
+        self.crossover_spin.setSingleStep(0.05)
+        self.crossover_spin.setValue(0.8)
+        form.addRow("Вероятность скрещивания:", self.crossover_spin)
 
-    def get_params(self):
+    def get_params(self) -> Params:
         return Params(
-            first=self.first_param.value(),
-            second=self.second_param.value(),
-            third=self.third_param.value(),
-            fourth=self.fourth_param.value(),
+            population_size=self.population_spin.value(),
+            steps=self.generations_spin.value(),
+            mutation_rate=self.mutation_spin.value(),
+            crossover_rate=self.crossover_spin.value(),
         )

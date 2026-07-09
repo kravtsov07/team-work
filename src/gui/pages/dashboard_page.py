@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 
 from src.back.linker import PlottingData, get_plot_data
 from src.gui.pages.choice_board import ChoiceBoard
-from src.gui.pages.param_setter import ParamSetter
+from src.gui.pages.param_setter import GAParamsPanel
 from src.gui.pages.results_panel import ResultsPanel
 
 
@@ -34,7 +34,7 @@ class DashboardPage(QWidget):
         self.choice_board = ChoiceBoard()
         left_layout.addWidget(self.choice_board)
 
-        self.param_setter = ParamSetter()
+        self.param_setter = GAParamsPanel()
         left_layout.addWidget(self.param_setter)
 
         button_layout = QHBoxLayout()
