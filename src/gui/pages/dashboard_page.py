@@ -73,6 +73,17 @@ class DashboardPage(QWidget):
         self.plot_widget.showGrid(x=True, y=True)
         right_layout.addWidget(self.plot_widget, 1)
 
+        player_layout = QHBoxLayout()  # Кнопки плеера
+        first_step = QPushButton("«")
+        prev_step = QPushButton("<")
+        next_step = QPushButton(">")
+        last_step = QPushButton("»")
+        player_layout.addWidget(first_step)
+        player_layout.addWidget(prev_step)
+        player_layout.addWidget(next_step)
+        player_layout.addWidget(last_step)
+        right_layout.addLayout(player_layout)
+
         self.result_page = ResultsPanel()
         right_layout.addWidget(self.result_page)
 

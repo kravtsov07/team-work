@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QFormLayout,
@@ -54,7 +55,7 @@ class GAParamsPanel(QGroupBox):
     @staticmethod
     def make_hint_label(text: str, tooltip: str) -> QLabel:
         return HintLabel(text, tooltip)
-    
+
     def set_default_values(self) -> None:
         self.population_spin.setValue(100)
         self.generations_spin.setValue(200)
@@ -122,4 +123,20 @@ class HintLabel(QLabel):
         super().__init__(text, parent)
         self.setToolTip(tooltip)
         self.setCursor(Qt.CursorShape.WhatsThisCursor)
-        self.setStyleSheet("border-bottom: 1px dotted gray; padding-bottom: 2px;")
+        self.setContentsMargins(0, 0, 0, 3)
+
+    def paintEvent(self, event) -> None:
+        super().paintEvent(event)
+
+        text_width = self.fontMetrics().horizontalAdvance(self.text())
+        if text_width <= 0:
+            return
+
+        painter = QPainter(self)
+        pen = QPen()
+        pen.setStyle(Qt.PenStyle.DotLine)
+        pen.setWidth(1)
+        pen.setColor(QColor("#ffF0Ff"))
+        painter.setPen(pen)
+        y = self.rect().bottom() - 1
+        painter.drawLine(0, y, text_width, y)
