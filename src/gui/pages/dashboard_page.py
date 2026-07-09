@@ -1,13 +1,15 @@
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QHBoxLayout,
     QLabel,
+    QPushButton,
     QSplitter,
     QVBoxLayout,
     QWidget,
 )
 
-from src.back.linker import get_plot_data
+from src.back.linker import PlottingData, get_plot_data
 from src.gui.pages.choice_board import ChoiceBoard
 from src.gui.pages.param_setter import ParamSetter
 from src.gui.pages.results_panel import ResultsPanel
@@ -34,11 +36,22 @@ class DashboardPage(QWidget):
         self.param_setter = ParamSetter()
         left_layout.addWidget(self.param_setter)
 
+        button_layout = QHBoxLayout()
+        self.generate_button = QPushButton("Посчитать")
+        self.generate_button.clicked.connect(self._on_generate_clicked)
+        self.refresh_button = QPushButton("Очистить")
+        self.refresh_button.clicked.connect(self._on_refresh_clicked)
+
+        button_layout.addWidget(self.refresh_button)
+        button_layout.addWidget(self.generate_button)
+
+        left_layout.addLayout(button_layout)
+
         left_layout.addStretch()
         left_widget.setMinimumWidth(320)
         left_widget.setMaximumWidth(420)
-        splitter.addWidget(left_widget)
 
+        splitter.addWidget(left_widget)
         layout.addWidget(splitter)
 
         # Право
@@ -65,9 +78,17 @@ class DashboardPage(QWidget):
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
 
-    def _refresh_plot(self):
+    def _on_generate_clicked(self):
+        self.matrices = self.choice_board.get_matrices()
+        # TODO: Сюда добавить параметры
         plot_data = get_plot_data(self.matrices)
+        self._refresh_plot(plot_data)
 
+    # TODO: надо подумать как кнопка работать будет. Очищает поле ввода и параметров или лучше две отдельные кнопки сделать
+    def _on_refresh_clicked(self):
+        pass
+
+    def _refresh_plot(self, plot_data: PlottingData):
         self.plot_widget.clear()
         self.plot_widget.addLegend(offset=(10, 10))
 

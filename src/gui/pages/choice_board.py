@@ -38,6 +38,7 @@ class ChoiceBoard(QGroupBox):
         layout = QVBoxLayout()
         self.source_group = QButtonGroup(self)
 
+        # рандом
         random_row = QHBoxLayout()
         self.random_radio = QRadioButton("Случайные матрицы")
         self.random_radio.setChecked(True)
@@ -45,6 +46,7 @@ class ChoiceBoard(QGroupBox):
         random_row.addWidget(self.random_radio)
 
         self.sample_size_spin = QSpinBox()
+        # TODO: сделать оповещение об невозможности создания 1-2 матриц вместо этого
         self.sample_size_spin.setRange(3, 1000)
         self.sample_size_spin.setValue(20)
         random_row.addWidget(self.sample_size_spin)
@@ -55,7 +57,7 @@ class ChoiceBoard(QGroupBox):
         random_row.addStretch()
         layout.addLayout(random_row)
 
-        # --- файл ---
+        # файл
         file_row = QHBoxLayout()
         self.file_radio = QRadioButton("Загрузить файл")
         self.source_group.addButton(self.file_radio, Source.FILE.value)
@@ -71,7 +73,7 @@ class ChoiceBoard(QGroupBox):
         file_row.addWidget(self.browse_button)
         layout.addLayout(file_row)
 
-        # --- вручную ---
+        # вручную
         manual_row = QHBoxLayout()
         self.manual_radio = QRadioButton("Ввести вручную")
         self.source_group.addButton(self.manual_radio, Source.MANUAL.value)
@@ -85,7 +87,7 @@ class ChoiceBoard(QGroupBox):
 
         self.source_group.idClicked.connect(self._on_source_changed)
 
-        # --- общий список + статус ---
+        # общий список + статус
         self.matrices_list_widget = QListWidget()
         self.matrices_list_widget.setMaximumHeight(140)
         layout.addWidget(self.matrices_list_widget)
@@ -159,3 +161,6 @@ class ChoiceBoard(QGroupBox):
         for i, (rows, cols) in enumerate(matrices, start=1):
             self.matrices_list_widget.addItem(f"A{i}: {rows} × {cols}")
         self.matrices_changed.emit(self.matrices)
+
+    def get_matrices(self) -> list[list[int]]:
+        return self.matrices
