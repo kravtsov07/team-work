@@ -87,12 +87,11 @@ class DashboardPage(QWidget):
 
     def _on_generate_clicked(self):
         self.matrices = self.choice_board.get_matrices()
-
+        params = self.param_setter.get_params()
         if not self._validate_input():
             return
 
-        # TODO: Сюда добавить параметры
-        plot_data = get_plot_data(self.matrices)
+        plot_data = get_plot_data(self.matrices, params)
         self._refresh_plot(plot_data)
 
     # TODO: надо подумать как кнопка работать будет. Очищает поле ввода и параметров или лучше две отдельные кнопки сделать

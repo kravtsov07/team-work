@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
 from src.back.GA import genetic_algorithm
-from src.back.helpers import get_random_matrices, pairs_to_dimensions
+from src.back.helpers import pairs_to_dimensions
+from src.gui.pages.param_setter import Params
 
 
 @dataclass
@@ -13,23 +14,17 @@ class PlottingData:
     best_order: str
 
 
-def get_plot_data(
-    matrices: list[list[int]],
-    population_size: int = 100,
-    steps: int = 200,
-    mutation_rate: float = 0.05,
-    crossover_rate: float = 0.8,
-) -> PlottingData:
+def get_plot_data(matrices: list[list[int]], params: Params) -> PlottingData:
 
     dimensions = pairs_to_dimensions(matrices)
 
     history, min_cost = genetic_algorithm(
-        population_size=population_size,
-        steps=steps,
+        population_size=params.population_size,
+        steps=params.steps,
         dim_size=len(dimensions),
         dimensions=dimensions,
-        # mutation_rate=mutation_rate,
-        # crossover_rate=crossover_rate,
+        p_m=params.mutation_rate,
+        p_c=params.crossover_rate,
     )
 
     return PlottingData(
