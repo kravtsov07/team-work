@@ -94,9 +94,8 @@ class DashboardPage(QWidget):
         plot_data = get_plot_data(self.matrices, params)
         self._refresh_plot(plot_data)
 
-    # TODO: надо подумать как кнопка работать будет. Очищает поле ввода и параметров или лучше две отдельные кнопки сделать
     def _on_refresh_clicked(self):
-        pass
+        self.param_setter.set_default_values()
 
     def _refresh_plot(self, plot_data: PlottingData):
         self.plot_widget.clear()

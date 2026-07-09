@@ -27,7 +27,7 @@ TOOLTIP_MAP = {
     ),
     "generation": (
         "Максимальное количество поколений, которое создаст алгоритм.\n\n"
-        " - Большее число поколений позволяет лучше улучшить решение.\n"
+        " - Большее число поколений позволяет улучшить решение.\n"
         " - Увеличение значения приводит к более длительным вычислениям."
     ),
     "mutation": (
@@ -54,8 +54,14 @@ class GAParamsPanel(QGroupBox):
     @staticmethod
     def make_hint_label(text: str, tooltip: str) -> QLabel:
         return HintLabel(text, tooltip)
+    
+    def set_default_values(self) -> None:
+        self.population_spin.setValue(100)
+        self.generations_spin.setValue(200)
+        self.mutation_spin.setValue(0.05)
+        self.crossover_spin.setValue(0.8)
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         form = QFormLayout(self)
 
         # Размер популяции
@@ -112,7 +118,7 @@ class GAParamsPanel(QGroupBox):
 
 
 class HintLabel(QLabel):
-    def __init__(self, text: str, tooltip: str, parent=None):
+    def __init__(self, text: str, tooltip: str, parent=None) -> None:
         super().__init__(text, parent)
         self.setToolTip(tooltip)
         self.setCursor(Qt.CursorShape.WhatsThisCursor)
