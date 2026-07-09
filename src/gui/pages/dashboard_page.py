@@ -17,6 +17,7 @@ from src.gui.pages.results_panel import ResultsPanel
 
 
 # TODO: подумать убирать ли вступительную страницу и юзать тока дашбоард
+# TODO: СРОЧНО РЕФАКТОРИТЬ! Это что-то с чем-то
 class DashboardPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -49,6 +50,15 @@ class DashboardPage(QWidget):
 
         left_layout.addLayout(button_layout)
 
+        toggle_layout = QHBoxLayout()
+        toggle_layout.addWidget(QLabel("Плеер:"))
+        self.player_toggle = QPushButton("OFF")
+        self.player_toggle.setCheckable(True)
+        self.player_toggle.toggled.connect(self._on_player_toggle)
+        toggle_layout.addWidget(self.player_toggle)
+        toggle_layout.addStretch()
+        left_layout.addLayout(toggle_layout)
+
         left_layout.addStretch()
         left_widget.setMinimumWidth(320)
         left_widget.setMaximumWidth(420)
@@ -74,15 +84,30 @@ class DashboardPage(QWidget):
         right_layout.addWidget(self.plot_widget, 1)
 
         player_layout = QHBoxLayout()  # Кнопки плеера
-        first_step = QPushButton("«")
-        prev_step = QPushButton("<")
-        next_step = QPushButton(">")
-        last_step = QPushButton("»")
-        player_layout.addWidget(first_step)
-        player_layout.addWidget(prev_step)
-        player_layout.addWidget(next_step)
-        player_layout.addWidget(last_step)
+        self.first_step_button = QPushButton("«")
+        self.prev_step_button = QPushButton("<")
+        self.next_step_button = QPushButton(">")
+        self.last_step_button = QPushButton("»")
+
+        self._player_buttons = (
+            self.first_step_button,
+            self.prev_step_button,
+            self.next_step_button,
+            self.last_step_button,
+        )
+
+        self.first_step_button.clicked.connect(self._on_first_step_clicked)
+        self.prev_step_button.clicked.connect(self._on_prev_step_clicked)
+        self.next_step_button.clicked.connect(self._on_next_step_clicked)
+        self.last_step_button.clicked.connect(self._on_last_step_clicked)
+
+        player_layout.addWidget(self.first_step_button)
+        player_layout.addWidget(self.prev_step_button)
+        player_layout.addWidget(self.next_step_button)
+        player_layout.addWidget(self.last_step_button)
         right_layout.addLayout(player_layout)
+
+        self._set_player_enabled(False)
 
         self.result_page = ResultsPanel()
         right_layout.addWidget(self.result_page)
@@ -105,6 +130,14 @@ class DashboardPage(QWidget):
 
         plot_data = get_plot_data(self.matrices, params)
         self._refresh_plot(plot_data)
+
+    def _set_player_enabled(self, enabled: bool) -> None:
+        for button in self._player_buttons:
+            button.setEnabled(enabled)
+
+    def _on_player_toggle(self, enabled: bool) -> None:
+        self.player_toggle.setText("ON" if enabled else "OFF")
+        self._set_player_enabled(enabled)
 
     def _on_refresh_clicked(self):
         self.param_setter.set_default_values()
