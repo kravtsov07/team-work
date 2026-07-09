@@ -93,6 +93,7 @@ class ChoiceBoard(QGroupBox):
         self.status_label = QLabel()
         self.status_label.setWordWrap(True)
         layout.addWidget(self.status_label)
+        self.setLayout(layout)
 
     def _current_source(self) -> Source:
         return Source(self.source_group.checkedId())
