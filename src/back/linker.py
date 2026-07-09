@@ -39,18 +39,3 @@ def get_plot_data(
         mean_cost=[snap.mean_cost for snap in history],
         best_order=str(history[-1].best_individual),
     )
-
-
-def get_random_plot_data() -> PlottingData:
-    dim_size = 20
-    dimensions = pairs_to_dimensions(get_random_matrices(dim_size - 1))
-    history, min_cost = genetic_algorithm(
-        population_size=100, steps=200, dim_size=dim_size, dimensions=dimensions
-    )
-
-    return PlottingData(
-        x=[snap.generation for snap in history],
-        target_cost=min_cost,
-        best_cost=[snap.best_cost for snap in history],
-        mean_cost=[snap.mean_cost for snap in history],
-    )
