@@ -109,6 +109,18 @@ class DashboardPage(QWidget):
     def _on_refresh_clicked(self):
         self.param_setter.set_default_values()
 
+    def _on_first_step_clicked(self):
+        pass
+
+    def _on_prev_step_clicked(self):
+        pass
+
+    def _on_next_step_clicked(self):
+        pass
+
+    def _on_last_step_clicked(self):
+        pass
+
     def _refresh_plot(self, plot_data: PlottingData):
         self.plot_widget.clear()
         self.plot_widget.addLegend(offset=(10, 10))
