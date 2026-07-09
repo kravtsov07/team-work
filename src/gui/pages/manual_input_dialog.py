@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIntValidator
+from PySide6.QtGui import QIcon, QIntValidator
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -13,17 +13,12 @@ from PySide6.QtWidgets import (
 
 
 class ManualInputDialog(QDialog):
-    """Диалог ручного ввода цепочки матриц.
-
-    Раньше это была отдельная страница мастера (ManualInputPage) с сигналами
-    next_clicked/back_clicked. Теперь это модальное окно: пользователь жмёт
-    "Редактировать вручную" на DataSourcePanel, здесь набирает цепочку,
-    жмёт "Готово", и итоговый список матриц возвращается через get_matrices().
-    """
+    """Диалог ручного ввода цепочки матриц."""
 
     def __init__(self, parent=None, initial_matrices: list[list[int]] | None = None):
         super().__init__(parent)
         self.setWindowTitle("Ввод матриц вручную")
+        self.setWindowIcon(QIcon("icons/icon.png"))
         self.setMinimumWidth(420)
         self.matrices: list[list[int]] = list(initial_matrices or [])
         self._setup_ui()

@@ -31,7 +31,7 @@ class ResultsPanel(QGroupBox):
         self.converged_label.setText("—")
         self.order_label.setText("—")
 
-    def update_results(self, plot_data: PlottingData, best_order: str | None = None):
+    def update_results(self, plot_data: PlottingData):
         if not plot_data.best_cost:
             self.clear()
             return
@@ -50,4 +50,4 @@ class ResultsPanel(QGroupBox):
         )
         self.converged_label.setText(str(converged_gen))
 
-        self.order_label.setText(best_order if best_order else "—")
+        self.order_label.setText(plot_data.best_order)

@@ -10,7 +10,7 @@ class PlottingData:
     target_cost: int
     best_cost: list[int]
     mean_cost: list[float]
-    best_order: str | None = None  # заполняется, только если GA.py это отдаёт
+    best_order: str
 
 
 def get_plot_data(
@@ -20,13 +20,7 @@ def get_plot_data(
     mutation_rate: float = 0.05,
     crossover_rate: float = 0.8,
 ) -> PlottingData:
-    """
-    ВАЖНО: mutation_rate и crossover_rate сейчас просто прокидываются дальше.
-    genetic_algorithm() в GA.py нужно доработать, чтобы он их принимал и
-    реально использовал внутри алгоритма (сейчас там жёстко зашитые
-    вероятности, если они вообще есть). Пока этого не сделано, эти два
-    параметра в UI будут визуально настраиваться, но не влиять на расчёт.
-    """
+
     dimensions = pairs_to_dimensions(matrices)
 
     history, min_cost = genetic_algorithm(
@@ -36,7 +30,6 @@ def get_plot_data(
         dimensions=dimensions,
         # mutation_rate=mutation_rate,
         # crossover_rate=crossover_rate,
-        # ^ раскомментировать после того, как GA.py начнёт принимать эти kwargs
     )
 
     return PlottingData(
@@ -44,6 +37,7 @@ def get_plot_data(
         target_cost=min_cost,
         best_cost=[snap.best_cost for snap in history],
         mean_cost=[snap.mean_cost for snap in history],
+        best_order=str(history[-1].best_individual),
     )
 
 

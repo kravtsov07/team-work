@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QPushButton,
     QSplitter,
     QVBoxLayout,
@@ -78,8 +79,18 @@ class DashboardPage(QWidget):
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
 
+    def _validate_input(self):
+        if len(self.matrices) < 3:
+            QMessageBox.warning(self, "Invalid input", "Задайте матрицы")
+            return False
+        return True
+
     def _on_generate_clicked(self):
         self.matrices = self.choice_board.get_matrices()
+
+        if not self._validate_input():
+            return
+
         # TODO: Сюда добавить параметры
         plot_data = get_plot_data(self.matrices)
         self._refresh_plot(plot_data)
@@ -114,3 +125,5 @@ class DashboardPage(QWidget):
             pen=pg.mkPen(color="magenta", width=3),
             name="Целевое отношение",
         )
+
+        self.result_page.update_results(plot_data)
