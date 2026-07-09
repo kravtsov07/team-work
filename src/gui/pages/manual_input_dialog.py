@@ -1,40 +1,42 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QListWidget,
     QPushButton,
     QVBoxLayout,
-    QWidget,
 )
 
 
-class ManualInputPage(QWidget):
-    """Страница ручного ввода матриц"""
+class ManualInputDialog(QDialog):
+    """Диалог ручного ввода цепочки матриц.
 
-    next_clicked = Signal(list)
-    back_clicked = Signal()
+    Раньше это была отдельная страница мастера (ManualInputPage) с сигналами
+    next_clicked/back_clicked. Теперь это модальное окно: пользователь жмёт
+    "Редактировать вручную" на DataSourcePanel, здесь набирает цепочку,
+    жмёт "Готово", и итоговый список матриц возвращается через get_matrices().
+    """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, initial_matrices: list[list[int]] | None = None):
         super().__init__(parent)
-        self.matrices = []
+        self.setWindowTitle("Ввод матриц вручную")
+        self.setMinimumWidth(420)
+        self.matrices: list[list[int]] = list(initial_matrices or [])
         self._setup_ui()
+        self._reload_list()
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
 
-        title = QLabel("Введите размеры матриц вручную")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(title)
-
         hint = QLabel(
             "Для перемножения цепочки матриц важны только их размеры.\n"
-            "Укажите высоту (кол-во строк) и ширину (кол-во столбцов) "
-            "очередной матрицы и нажмите '+', чтобы добавить её в цепочку.\n"
-            "Обратите внимание, что в каждый момент цепочка должна быть валидной!\n"
-            "Пример. A: 11 x 2, B: 2 x 3, C: 4 x 11 и так далее"
+            "Укажите высоту и ширину очередной матрицы и нажмите '+'.\n"
+            "Цепочка должна оставаться валидной на каждом шаге.\n"
+            "Пример: A: 11 x 2, B: 2 x 3, C: 4 x 11 и так далее"
         )
         hint.setWordWrap(True)
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -74,26 +76,24 @@ class ManualInputPage(QWidget):
         self.status_label.setWordWrap(True)
         layout.addWidget(self.status_label)
 
-        layout.addStretch()
-
-        back_button = QPushButton("Назад")
-        back_button.clicked.connect(self.back_clicked)
-
-        self.next_button = QPushButton("Далее")
-        self.next_button.setEnabled(False)
-        self.next_button.clicked.connect(self._on_next_clicked)
-
-        button_layout = QHBoxLayout()
-        button_layout.addStretch()
-        button_layout.addWidget(back_button)
-        button_layout.addWidget(self.next_button)
-        button_layout.addStretch()
-        layout.addLayout(button_layout)
+        self.button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        self.button_box.button(QDialogButtonBox.StandardButton.Ok).setText("Готово")
+        self.button_box.button(QDialogButtonBox.StandardButton.Cancel).setText("Отмена")
+        self.button_box.accepted.connect(self._on_accept)
+        self.button_box.rejected.connect(self.reject)
+        layout.addWidget(self.button_box)
 
         self._update_status()
 
+    # TODO: проверить, возможно слишком дорого обходится
+    def _reload_list(self):
+        self.matrices_list_widget.clear()
+        for i, (rows, cols) in enumerate(self.matrices, start=1):
+            self.matrices_list_widget.addItem(f"Матрица {i}: {rows} x {cols}")
+
     def _current_dimensions_are_valid(self):
-        """Проверяет, что оба поля ввода сейчас содержат положительные целые."""
         height_text = self.height_edit.text().strip()
         width_text = self.width_edit.text().strip()
         if not height_text or not width_text:
@@ -104,8 +104,9 @@ class ManualInputPage(QWidget):
             return False
 
     def _update_add_button_state(self):
-        """Делает кнопку "+" активной, только если заданы правильные измерения матрицы"""
         self.add_button.setEnabled(self._current_dimensions_are_valid())
+        self.status_label.clear()
+        self._update_status()
 
     def _on_add_clicked(self):
         if not self._current_dimensions_are_valid():
@@ -116,20 +117,15 @@ class ManualInputPage(QWidget):
 
         if self.matrices and rows != self.matrices[-1][1]:
             if self.matrices and cols == self.matrices[0][0]:
-                """Если матрицу можно добавить в начало -- добавим в начало"""
-                self.matrices = [(rows, cols)] + self.matrices
-                self.matrices_list_widget.insertItem(
-                    0, f"Матрица {len(self.matrices)}: {rows} x {cols}"
-                )
+                self.matrices = [[rows, cols]] + self.matrices
             else:
                 self.status_label.setText("Данные матрицы невозможно перемножить")
                 self.status_label.setStyleSheet("color: red;")
                 return
         else:
-            self.matrices.append((rows, cols))
-            self.matrices_list_widget.addItem(
-                f"Матрица {len(self.matrices)}: {rows} x {cols}"
-            )
+            self.matrices.append([rows, cols])
+
+        self._reload_list()
 
         self.height_edit.clear()
         self.width_edit.clear()
@@ -142,7 +138,7 @@ class ManualInputPage(QWidget):
         if not self.matrices:
             return
         self.matrices.pop()
-        self.matrices_list_widget.takeItem(self.matrices_list_widget.count() - 1)
+        self._reload_list()
         self._update_status()
 
     def _update_status(self):
@@ -158,9 +154,14 @@ class ManualInputPage(QWidget):
             self.status_label.setText("Можно считать.")
             self.status_label.setStyleSheet("color: green;")
 
-        self.next_button.setEnabled(enough_matrices)
+        self.button_box.button(QDialogButtonBox.StandardButton.Ok).setEnabled(
+            enough_matrices
+        )
 
-    def _on_next_clicked(self):
-        if not self.next_button.isEnabled():
+    def _on_accept(self):
+        if len(self.matrices) < 2:
             return
-        self.next_clicked.emit(self.matrices)
+        self.accept()
+
+    def get_matrices(self) -> list[list[int]]:
+        return self.matrices

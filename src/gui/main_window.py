@@ -8,6 +8,7 @@ from src.gui.pages.preview_page import PreviewPage
 from src.gui.pages.welcome_page import WelcomePage
 
 
+# TODO: избавится от связки назад-вперед
 class MainWindow(QMainWindow):
     """Страницы в QStackedWidget и переходы между ними"""
 
