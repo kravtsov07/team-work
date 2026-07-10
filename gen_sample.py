@@ -1,4 +1,4 @@
-# Файл для удобства
+"""Файл для удобства"""
 
 from random import randint
 
