@@ -240,7 +240,7 @@ def genetic_algorithm(
         """ if best_cost <= min_cost:
             break """
         
-        population = selection(population, dimensions, tournament_size, 0.01, p_c)
+        population = selection(population, dimensions, tournament_size, p_m, p_c)
         population[0] = best_ind
 
     return history, min_cost
