@@ -1,25 +1,6 @@
 import copy
 import random as rd
 from dataclasses import dataclass
-# from src.back.helpers import get_random_matrices, pairs_to_dimensions
-
-def get_random_matrices(
-    matrix_count: int = 20,
-    min_size: int = 5,
-    max_size: int = 50,
-) -> list[list[int]]:
-
-    dimensions = [rd.randint(min_size, max_size) for _ in range(matrix_count + 1)]
-
-    return [[dimensions[i], dimensions[i + 1]] for i in range(matrix_count)]
-
-
-def pairs_to_dimensions(matrices: list[list[int]]) -> list[int]:
-    dims = [matrices[0][0]]
-    for matrix in matrices:
-        dims.append(matrix[1])
-    return dims
-
 
 @dataclass
 class GenerationSnapshot:
@@ -178,7 +159,11 @@ class GeneticAlgorithm:
             
             self._selection()
             self.population[rd.randint(0, population_size - 1)] = best_ind
-
+    
+    def degradation(self, step: int):
+        self.cur_generation -= step
+        
+    
 
 def calculate_min_cost(dimensions: list[int]) -> int:
 
