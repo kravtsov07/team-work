@@ -12,6 +12,7 @@ class PlottingData:
     best_cost: list[int]
     mean_cost: list[float]
     best_order: str
+    populations: list | None = None
 
 
 def get_plot_data(matrices: list[list[int]], params: Params) -> PlottingData:
@@ -33,4 +34,5 @@ def get_plot_data(matrices: list[list[int]], params: Params) -> PlottingData:
         best_cost=[snap.best_cost for snap in history],
         mean_cost=[snap.mean_cost for snap in history],
         best_order=str(history[-1].best_individual),
+        populations=[snap.population for snap in history],
     )

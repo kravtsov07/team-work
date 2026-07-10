@@ -1,3 +1,5 @@
+from enum import Enum
+
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -16,12 +18,22 @@ from src.gui.pages.param_setter import GAParamsPanel
 from src.gui.pages.results_panel import ResultsPanel
 
 
+class Mode(Enum):
+    REG = 0
+    ITER = 1
+
+
 # TODO: подумать убирать ли вступительную страницу и юзать тока дашбоард
 # TODO: СРОЧНО РЕФАКТОРИТЬ! Это что-то с чем-то
 class DashboardPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.matrices: list[list[int]] = []
+        self.mode: Mode = Mode.REG
+        self.plot_data: PlottingData | None = None
+        self.gen_line: pg.InfiniteLine | None = None
+        self.cur_gen: int = 0
+        self.last_gen: int = 0
         self._setup_ui()
 
     def _setup_ui(self):
@@ -83,6 +95,10 @@ class DashboardPage(QWidget):
         self.plot_widget.showGrid(x=True, y=True)
         right_layout.addWidget(self.plot_widget, 1)
 
+        self.gen_label = QLabel("Поколение: .../...")
+        self.gen_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        right_layout.addWidget(self.gen_label)
+
         player_layout = QHBoxLayout()  # Кнопки плеера
         self.first_step_button = QPushButton("«")
         self.prev_step_button = QPushButton("<")
@@ -128,8 +144,17 @@ class DashboardPage(QWidget):
         if not self._validate_input():
             return
 
-        plot_data = get_plot_data(self.matrices, params)
-        self._refresh_plot(plot_data)
+        self.plot_data = get_plot_data(self.matrices, params)
+        self.last_gen = len(self.plot_data.x) - 1
+        self.cur_gen = 0
+        self.gen_line = None  # clear() below will drop the old line item
+
+        self._refresh_plot(self.plot_data)
+
+        if self.mode is Mode.ITER:
+            self._move_to_generation(0)
+        else:
+            self._update_label()
 
     def _set_player_enabled(self, enabled: bool) -> None:
         for button in self._player_buttons:
@@ -138,42 +163,67 @@ class DashboardPage(QWidget):
     def _on_player_toggle(self, enabled: bool) -> None:
         self.player_toggle.setText("ON" if enabled else "OFF")
         self._set_player_enabled(enabled)
+        self.mode = Mode.ITER if enabled else Mode.REG
 
     def _on_refresh_clicked(self):
         self.param_setter.set_default_values()
 
     def _on_first_step_clicked(self):
-        pass
+        self._move_to_generation(0)
 
     def _on_prev_step_clicked(self):
-        pass
+        self._move_to_generation(self.cur_gen - 1)
 
     def _on_next_step_clicked(self):
-        pass
+        self._move_to_generation(self.cur_gen + 1)
 
     def _on_last_step_clicked(self):
-        pass
+        self._move_to_generation(self.last_gen)
+
+    def _move_to_generation(self, index: int) -> None:
+        if self.plot_data is None:
+            return
+
+        self.cur_gen = max(0, min(index, self.last_gen))
+        x_pos = self.plot_data.x[self.cur_gen]
+
+        if self.gen_line is None:
+            self.gen_line = pg.InfiniteLine(
+                pos=x_pos,
+                angle=90,
+                movable=False,
+                pen=pg.mkPen(color="gray", width=2, style=Qt.PenStyle.DashLine),
+            )
+            self.plot_widget.addItem(self.gen_line)
+        else:
+            self.gen_line.setPos(x_pos)
+
+        self._update_label()
+        self._update_step_buttons()
+
+    def _update_step_buttons(self) -> None:
+        self.first_step_button.setEnabled(self.cur_gen > 0)
+        self.prev_step_button.setEnabled(self.cur_gen > 0)
+        self.next_step_button.setEnabled(self.cur_gen < self.last_gen)
+        self.last_step_button.setEnabled(self.cur_gen < self.last_gen)
 
     def _refresh_plot(self, plot_data: PlottingData):
         self.plot_widget.clear()
+        self.gen_line = None
         self.plot_widget.addLegend(offset=(10, 10))
 
-        # график лучшего значения
         self.plot_widget.plot(
             plot_data.x,
-            [plot_data.target_cost / best_cost for best_cost in plot_data.best_cost],
+            [plot_data.target_cost / c for c in plot_data.best_cost],
             pen=pg.mkPen(color="dodgerblue", width=3),
             name="Лучшее значение поколения",
         )
-
-        # график среднего значения
         self.plot_widget.plot(
             plot_data.x,
-            [plot_data.target_cost / mean_cost for mean_cost in plot_data.mean_cost],
+            [plot_data.target_cost / c for c in plot_data.mean_cost],
             pen=pg.mkPen(color="lightcoral", width=3),
             name="Среднее значение поколения",
         )
-
         self.plot_widget.plot(
             plot_data.x,
             [1] * len(plot_data.x),
@@ -182,3 +232,6 @@ class DashboardPage(QWidget):
         )
 
         self.result_page.update_results(plot_data)
+
+    def _update_label(self) -> None:
+        self.gen_label.setText(f"Поколение: {self.cur_gen}/{self.last_gen}")
