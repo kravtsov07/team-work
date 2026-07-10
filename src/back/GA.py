@@ -1,7 +1,6 @@
 import random as rd
 from dataclasses import dataclass
 
-
 # по сути generation - x
 # best_cost, mean_cost - y
 
@@ -22,7 +21,7 @@ class GeneticAlgorithm:
         self.p_m: float = 1/len(dimensions) # вероятность мутации
         self.p_c: float = 0.8 # вероятность скрещивания
         self.tournament_size = 3 # размер турика
-        self.cur_generation: int = 0 # индекс последней генерации
+        self.cur_generation: int = 0 # номер последней генерации
         self.history: dict[GenerationSnapshot] = {} # история поколений
     
     def set_p_c(self, p_c: float):
@@ -201,7 +200,7 @@ def greedy_cost(dimensions: list[int]) -> int:
 
 if __name__ == "__main__":
     ga = GeneticAlgorithm([9, 21, 19, 11, 23, 10, 36, 34, 24, 9, 27, 44, 46, 14, 42, 10, 5, 43, 42, 7])
-    ga.evolution(10, 100)
+    ga.evolution(100, 100)
     print(ga.get_history().keys())
     last_snap = ga.history[ga.cur_generation]
     min_cost = ga.get_min_cost()
