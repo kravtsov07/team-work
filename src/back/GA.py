@@ -41,9 +41,15 @@ class GeneticAlgorithm:
         self.cur_generation: int = -1 # индекс последней генерации
         self.history: list[GenerationSnapshot] = {} # история поколений
     
-    def set_p_c(self, p_c):
+    def set_p_c(self, p_c: float):
         self.p_c = p_c
     
+    def set_p_m(self, p_m: float):
+        self.p_m = p_m
+        
+    def set_tournamet_size(self, tournament_size: int):
+        self.tournament_size = tournament_size
+
     def get_min_cost(self):
         if self.dims_size < 32:
             # точное значение лучшего решения
