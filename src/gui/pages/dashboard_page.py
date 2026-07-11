@@ -16,8 +16,6 @@ from src.gui.pages.param_setter import GAParamsPanel
 from src.gui.pages.results_panel import ResultsPanel
 
 
-# TODO: подумать убирать ли вступительную страницу и юзать тока дашбоард
-# TODO: СРОЧНО РЕФАКТОРИТЬ! Это что-то с чем-то
 class DashboardPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -26,7 +24,6 @@ class DashboardPage(QWidget):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-
         splitter = QSplitter()
 
         # Лево
