@@ -11,8 +11,8 @@ def get_plot_data(matrices: list[list[int]], params: Params) -> PlottingData:
 
     ga = GeneticAlgorithm(dimensions=dimensions)
     
-    ga.set_p_c(params.crossover_rate)
-    ga.set_p_m(params.mutation_rate)
-    ga.evolution(steps=params.steps, population_size=params.population_size)
+    ga.set_params(params=params)
+    
+    ga.evolution(steps=params.steps)
 
     return ga.get_plot_data()

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from src.back.helpers import calculate_min_cost, greedy_cost
 from src.back.helpers import PlottingData, GenerationSnapshot
+from src.gui.pages.param_setter import Params
 # по сути generation - x
 # best_cost, mean_cost - y
 
@@ -12,12 +13,21 @@ class GeneticAlgorithm:
         self.dims_size: int = len(dimensions) # колво размерностей матриц (matr_size = dim_size - 1)
         self.ind_size: int = self.dims_size - 2 # размер индивида
         self.population: list[list[int]] = [] # последняя популяция (history[cur_gen].population)
+        self.population_size: int = 0 # размер популяции
         self.p_m: float = 1/(len(dimensions) - 2) # вероятность мутации
         self.p_c: float = 0.8 # вероятность скрещивания
         self.tournament_size = 3 # размер турика
         self.cur_generation: int = 0 # номер последней генерации
         self.history: dict[int, GenerationSnapshot] = {} # история поколений
-        
+    
+    def set_params(self, params: Params):
+        self.set_p_c(params.crossover_rate)
+        self.set_p_m(params.mutation_rate)
+        self.set_population_size(params.population_size)
+    
+    def set_population_size(self, pop_size: int):
+        self.population_size = pop_size
+    
     def set_p_c(self, p_c: float):
         self.p_c = p_c
     
@@ -121,9 +131,11 @@ class GeneticAlgorithm:
         
         self.population = next_population
             
-    def evolution(self, steps: int, population_size: int = 100):
+    def evolution(self, steps: int):
         if not self.population:
-            self._generate_population(pop_size=population_size)
+            if self.population_size == 0:
+                self.population_size = 100
+            self._generate_population(self.population_size)
         # делаем заданное колво эволюций
         for _ in range(steps):
             self.cur_generation += 1
@@ -134,17 +146,17 @@ class GeneticAlgorithm:
             self.history[self.cur_generation] = GenerationSnapshot(
                         generation=self.cur_generation,
                         best_cost=best_cost,
-                        mean_cost=sum(costs) / population_size,
+                        mean_cost=sum(costs) / self.population_size,
                         best_individual=best_ind.copy(),
                         population=[ind.copy() for ind in self.population]
                     )
             
             self._selection()
-            self.population[rd.randint(0, population_size - 1)] = best_ind
+            self.population[rd.randint(0, self.population_size - 1)] = best_ind
     
     def go_next_generate(self):
         if self.population:
-            self.evolution(self, steps=1, population_size=len(self.population))
+            self.evolution(self, steps=1)
         else:
             print("задайте размер популяции гнилы еб*ные")
             
@@ -173,7 +185,8 @@ class GeneticAlgorithm:
 
 if __name__ == "__main__":
     ga = GeneticAlgorithm([9, 21, 19, 11, 23, 10, 36, 34, 24, 9, 27, 44, 46, 14, 42, 10, 5, 43, 42, 7])
-    ga.evolution(100, 100)
+    ga.set_population_size(100)
+    ga.evolution(100)
     last_snap = ga.history[ga.cur_generation]
     min_cost = ga.get_min_cost()
     
