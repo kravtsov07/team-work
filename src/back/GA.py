@@ -1,16 +1,10 @@
 import random as rd
 from dataclasses import dataclass
 
+from src.back.helpers import calculate_min_cost, greedy_cost
+from src.back.helpers import PlottingData, GenerationSnapshot
 # по сути generation - x
 # best_cost, mean_cost - y
-
-@dataclass
-class GenerationSnapshot:
-    generation: int  # номер поколения
-    best_cost: int  # лучшая стоимость
-    mean_cost: float  # средняя стоимость
-    best_individual: list[int]  # хромосома лучшего решения
-    population: list[list[int]]
 
 class GeneticAlgorithm:
     def __init__(self, dimensions: list[int]):
@@ -18,35 +12,34 @@ class GeneticAlgorithm:
         self.dims_size: int = len(dimensions) # колво размерностей матриц (matr_size = dim_size - 1)
         self.ind_size: int = self.dims_size - 2 # размер индивида
         self.population: list[list[int]] = [] # последняя популяция (history[cur_gen].population)
-        self.p_m: float = 1/len(dimensions) # вероятность мутации
+        self.p_m: float = 1/(len(dimensions) - 2) # вероятность мутации
         self.p_c: float = 0.8 # вероятность скрещивания
         self.tournament_size = 3 # размер турика
         self.cur_generation: int = 0 # номер последней генерации
-        self.history: dict[GenerationSnapshot] = {} # история поколений
-    
+        self.history: dict[int, GenerationSnapshot] = {} # история поколений
+        
     def set_p_c(self, p_c: float):
         self.p_c = p_c
     
     def set_p_m(self, p_m: float):
         self.p_m = p_m
         
-    def set_tournamet_size(self, tournament_size: int):
+    def set_tournament_size(self, tournament_size: int):
         self.tournament_size = tournament_size
 
     def get_min_cost(self):
-        if self.dims_size < 32:
-            # точное значение лучшего решения
-            min_cost = calculate_min_cost(self.dimensions)
-        else:
-            # верхняя оценка - цена полученная жадным алгоритмом =>
-            # если график лучшего индивида га выше линии target то алгоритм норм отработал
-            
-            # при больших колвах матриц нужны большие популяции и много поколений
-            # для того чтобы алгоритм мог отработать нормально
-            min_cost = greedy_cost(self.dimensions)
-
-        return min_cost
+        # точное значение лучшего решения
+        return calculate_min_cost(self.dimensions)
     
+    def get_greedy_cost(self):
+        # верхняя оценка - цена полученная жадным алгоритмом =>
+        # если график лучшего индивида га выше линии target то алгоритм норм отработал
+        
+        # при больших колвах матриц нужны большие популяции и много поколений
+        # для того чтобы алгоритм мог отработать нормально
+        return greedy_cost(self.dimensions)
+    
+    # целевая функция
     def _calculate_cost(self, individual: list[int]) -> int:
 
         # считает колво операций по особи
@@ -149,65 +142,41 @@ class GeneticAlgorithm:
             self._selection()
             self.population[rd.randint(0, population_size - 1)] = best_ind
     
-    def degradation(self, step: int):
-        self.cur_generation -= step
+    def go_next_generate(self):
+        if self.population:
+            self.evolution(self, steps=1, population_size=len(self.population))
+        else:
+            print("задайте размер популяции гнилы еб*ные")
+            
+    def go_prev_generate(self):
+        self.degradation(steps=1)
+    
+    def degradation(self, steps: int):
+        self.cur_generation = max(0, self.cur_generation - steps)
+        if self.cur_generation > 0 and self.cur_generation in self.history:
+            self.population = [ind.copy() for ind in self.history[self.cur_generation]]
+    
+    def get_plot_data(self) -> PlottingData:
+        return PlottingData(
+            x=[snap.generation for snap in self.history.values()],
+            target_cost=self.get_min_cost(),
+            greedy_cost=self.get_greedy_cost(),
+            best_cost=[snap.best_cost for snap in self.history.values()],
+            mean_cost=[snap.mean_cost for snap in self.history.values()],
+            best_order=str(self.history[self.cur_generation].best_individual),
+        )
         
     def get_history(self):
         # for value in history.values:
         # value: GenerationSnapshot ну и там делаете графики
         return dict(list(self.history.items())[:self.cur_generation])
 
-def calculate_min_cost(dimensions: list[int]) -> int:
-
-    # считает точную минимальную стоимость перебором
-    n = len(dimensions) - 1
-    if n <= 0:
-        return 0
-
-    dp = [[0] * n for _ in range(n)]
-
-    for l in range(2, n + 1):
-        for i in range(n - l + 1):
-            j = i + l - 1
-            dp[i][j] = float("inf")
-
-            for k in range(i, j):
-                cost = (
-                    dp[i][k]
-                    + dp[k + 1][j]
-                    + dimensions[i] * dimensions[k + 1] * dimensions[j + 1]
-                )
-
-                if cost < dp[i][j]:
-                    dp[i][j] = cost
-
-    return dp[0][n - 1]
-
-def greedy_cost(dimensions: list[int]) -> int:
-    dims = dimensions.copy()
-    cost = 0
-
-    while len(dims) > 2:
-        best_i = min(
-            range(len(dims) - 2),
-            key=lambda i: dims[i] * dims[i + 1] * dims[i + 2],
-        )
-
-        cost += dims[best_i] * dims[best_i + 1] * dims[best_i + 2]
-        dims.pop(best_i + 1)
-
-    return cost
-
 if __name__ == "__main__":
     ga = GeneticAlgorithm([9, 21, 19, 11, 23, 10, 36, 34, 24, 9, 27, 44, 46, 14, 42, 10, 5, 43, 42, 7])
     ga.evolution(100, 100)
-    print(ga.get_history().keys())
     last_snap = ga.history[ga.cur_generation]
     min_cost = ga.get_min_cost()
-    print(ga.cur_generation)
-    ga.degradation(5)
-    print(ga.get_history().keys())
-    print(len(ga.get_history()))
+    
     print(f"Финальное поколение: {last_snap.generation}")
     print(f"Ожидаемый результат: {min_cost}")
     print(f"Лучший кост: {last_snap.best_cost}")

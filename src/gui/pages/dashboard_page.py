@@ -10,7 +10,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from src.back.linker import PlottingData, get_plot_data
+from src.back.helpers import PlottingData
+from src.back.linker import get_plot_data
 from src.gui.pages.choice_board import ChoiceBoard
 from src.gui.pages.param_setter import GAParamsPanel
 from src.gui.pages.results_panel import ResultsPanel
@@ -174,11 +175,19 @@ class DashboardPage(QWidget):
             name="Среднее значение поколения",
         )
 
+        # график точного минимума
         self.plot_widget.plot(
             plot_data.x,
             [1] * len(plot_data.x),
             pen=pg.mkPen(color="magenta", width=3),
             name="Целевое отношение",
+        )
+        
+        self.plot_widget.plot(
+            plot_data.x,
+            [plot_data.target_cost/plot_data.greedy_cost] * len(plot_data.x),
+            pen=pg.mkPen(color="green", width=3),
+            name="Верхняя оценка"
         )
 
         self.result_page.update_results(plot_data)

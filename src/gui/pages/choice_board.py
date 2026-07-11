@@ -47,6 +47,7 @@ class ChoiceBoard(QGroupBox):
 
         self.sample_size_spin = QSpinBox()
         # TODO: сделать оповещение об невозможности создания 1-2 матриц вместо этого
+        # эт п*здец кринж😊
         self.sample_size_spin.setRange(3, 1000)
         self.sample_size_spin.setValue(20)
         random_row.addWidget(self.sample_size_spin)
