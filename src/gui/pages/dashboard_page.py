@@ -23,8 +23,6 @@ class Mode(Enum):
     ITER = 1
 
 
-# TODO: подумать убирать ли вступительную страницу и юзать тока дашбоард
-# TODO: СРОЧНО РЕФАКТОРИТЬ! Это что-то с чем-то
 class DashboardPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -146,7 +144,7 @@ class DashboardPage(QWidget):
         self.plot_data = get_plot_data(self.matrices, params)
         self.last_gen = len(self.plot_data.x) - 1
         self.cur_gen = 0
-        self.gen_line = None  # clear() below will drop the old line item
+        self.gen_line = None
 
         self._refresh_plot(self.plot_data)
 
