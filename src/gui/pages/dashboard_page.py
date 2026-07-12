@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
 )
 
 from src.back.helpers import PlottingData
-from src.back.linker import get_plot_data
 from src.back.GA import GeneticAlgorithm
 from src.gui.pages.choice_board import ChoiceBoard
 from src.gui.pages.param_setter import GAParamsPanel
@@ -25,7 +24,7 @@ class DashboardPage(QWidget):
         super().__init__(parent)
         self.matrices: list[list[int]] = []
         self._setup_ui()
-        self.ga: GeneticAlgorithm | None = None
+        self.ga: GeneticAlgorithm
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
@@ -135,10 +134,6 @@ class DashboardPage(QWidget):
         
         if not self._validate_input():
             return
-        
-        # эт поход юзлесс условие
-        if self.ga is None:
-            self.ga = GeneticAlgorithm(pairs_to_dimensions(self.matrices))
 
         self.ga.set_params(params)
         self.ga.evolution(params.steps)
@@ -151,7 +146,7 @@ class DashboardPage(QWidget):
             button.setEnabled(enabled)
 
     def _on_player_toggle(self, enabled: bool) -> None:
-        self.player_toggle.setText("ON" if enabled else "OFF")
+        self.player_toggle.setText("Вкл" if enabled else "Выкл")
         self._set_player_enabled(enabled)
 
     def _on_refresh_clicked(self):

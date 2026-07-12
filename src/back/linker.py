@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from src.back.GA import GeneticAlgorithm
 from src.back.helpers import PlottingData
 from src.back.helpers import pairs_to_dimensions
