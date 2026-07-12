@@ -2,3 +2,6 @@
 venv
 *__pycache__*
 matrices.txt
+*puml
+out
+gem.py
