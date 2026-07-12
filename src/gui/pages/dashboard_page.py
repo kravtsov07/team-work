@@ -12,10 +12,11 @@ from PySide6.QtWidgets import (
 
 from src.back.helpers import PlottingData
 from src.back.linker import get_plot_data
+from src.back.GA import GeneticAlgorithm
 from src.gui.pages.choice_board import ChoiceBoard
 from src.gui.pages.param_setter import GAParamsPanel
 from src.gui.pages.results_panel import ResultsPanel
-
+from src.back.helpers import pairs_to_dimensions
 
 # TODO: подумать убирать ли вступительную страницу и юзать тока дашбоард
 # TODO: СРОЧНО РЕФАКТОРИТЬ! Это что-то с чем-то
@@ -24,6 +25,7 @@ class DashboardPage(QWidget):
         super().__init__(parent)
         self.matrices: list[list[int]] = []
         self._setup_ui()
+        self.ga: GeneticAlgorithm | None = None
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
@@ -124,12 +126,24 @@ class DashboardPage(QWidget):
         return True
 
     def _on_generate_clicked(self):
-        self.matrices = self.choice_board.get_matrices()
+        matr = self.choice_board.get_matrices()
+        if self.matrices != matr:
+            self.matrices = matr
+            self.ga = GeneticAlgorithm(pairs_to_dimensions(self.matrices))
+        
         params = self.param_setter.get_params()
+        
         if not self._validate_input():
             return
+        
+        # эт поход юзлесс условие
+        if self.ga is None:
+            self.ga = GeneticAlgorithm(pairs_to_dimensions(self.matrices))
 
-        plot_data = get_plot_data(self.matrices, params)
+        self.ga.set_params(params)
+        self.ga.evolution(params.steps)
+        
+        plot_data = self.ga.get_plot_data()
         self._refresh_plot(plot_data)
 
     def _set_player_enabled(self, enabled: bool) -> None:
@@ -144,16 +158,21 @@ class DashboardPage(QWidget):
         self.param_setter.set_default_values()
 
     def _on_first_step_clicked(self):
-        pass
+        self.ga.go_first_generate()
+        self._refresh_plot(self.ga.get_plot_data())
 
     def _on_prev_step_clicked(self):
-        pass
-
+        self.ga.go_prev_generate()
+        self._refresh_plot(self.ga.get_plot_data())
+        
     def _on_next_step_clicked(self):
-        pass
+        self.ga.go_next_generate()
+        self._refresh_plot(self.ga.get_plot_data())
 
     def _on_last_step_clicked(self):
-        pass
+        params = self.param_setter.get_params()
+        self.ga.go_last_generate(params.steps)
+        self._refresh_plot(self.ga.get_plot_data())
 
     def _refresh_plot(self, plot_data: PlottingData):
         self.plot_widget.clear()

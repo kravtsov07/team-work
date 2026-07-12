@@ -153,19 +153,28 @@ class GeneticAlgorithm:
             self._selection()
             self.population[rd.randint(0, self.population_size - 1)] = best_ind
     
-    def go_next_generate(self):
-        if self.population:
-            self.evolution(self, steps=1)
-        else:
-            print("задайте размер популяции гнилы еб*ные")
+    def go_first_generate(self):
+        if self.cur_generation < 1:
+            print("чуваки ни шагу назад")
+        self.cur_generation = 1
+        self.population = [ind.copy() for ind in self.history[1].population]
     
     def go_prev_generate(self):
         self.degradation(steps=1)
+     
+    def go_next_generate(self):
+        if self.population:
+            self.evolution(steps=1)
+        else:
+            print("задайте размер популяции гнилы еб*ные")
+    
+    def go_last_generate(self, number_last_gen: int):
+        self.evolution(number_last_gen - self.cur_generation)
     
     def degradation(self, steps: int):
         self.cur_generation = max(0, self.cur_generation - steps)
         if self.cur_generation > 0 and self.cur_generation in self.history:
-            self.population = [ind.copy() for ind in self.history[self.cur_generation]]
+            self.population = [ind.copy() for ind in self.history[self.cur_generation].population]
     
     def get_history(self):
         # for value in history.values:
@@ -174,12 +183,12 @@ class GeneticAlgorithm:
     
     def get_plot_data(self) -> PlottingData:
         return PlottingData(
-            x=[snap.generation for snap in self.history.values()],
+            x=[snap.generation for snap in self.get_history().values()],
             target_cost=self.get_min_cost(),
             greedy_cost=self.get_greedy_cost(),
-            best_cost=[snap.best_cost for snap in self.history.values()],
-            mean_cost=[snap.mean_cost for snap in self.history.values()],
-            best_order=str(self.history[self.cur_generation].best_individual),
+            best_cost=[snap.best_cost for snap in self.get_history().values()],
+            mean_cost=[snap.mean_cost for snap in self.get_history().values()],
+            best_order=str(self.get_history()[self.cur_generation].best_individual),
         )
 
 if __name__ == "__main__":
