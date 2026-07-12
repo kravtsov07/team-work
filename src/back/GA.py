@@ -1,5 +1,4 @@
 import random as rd
-from dataclasses import dataclass
 
 from src.back.helpers import calculate_min_cost, greedy_cost
 from src.back.helpers import PlottingData, GenerationSnapshot
@@ -33,7 +32,7 @@ class GeneticAlgorithm:
     
     def set_p_m(self, p_m: float):
         self.p_m = p_m
-        
+    
     def set_tournament_size(self, tournament_size: int):
         self.tournament_size = tournament_size
 
@@ -130,7 +129,7 @@ class GeneticAlgorithm:
                 len_next_population += 1
         
         self.population = next_population
-            
+    
     def evolution(self, steps: int):
         if not self.population:
             if self.population_size == 0:
@@ -159,7 +158,7 @@ class GeneticAlgorithm:
             self.evolution(self, steps=1)
         else:
             print("задайте размер популяции гнилы еб*ные")
-            
+    
     def go_prev_generate(self):
         self.degradation(steps=1)
     
@@ -167,6 +166,11 @@ class GeneticAlgorithm:
         self.cur_generation = max(0, self.cur_generation - steps)
         if self.cur_generation > 0 and self.cur_generation in self.history:
             self.population = [ind.copy() for ind in self.history[self.cur_generation]]
+    
+    def get_history(self):
+        # for value in history.values:
+        # value: GenerationSnapshot ну и там делаете графики
+        return dict(list(self.history.items())[:self.cur_generation])
     
     def get_plot_data(self) -> PlottingData:
         return PlottingData(
@@ -177,11 +181,6 @@ class GeneticAlgorithm:
             mean_cost=[snap.mean_cost for snap in self.history.values()],
             best_order=str(self.history[self.cur_generation].best_individual),
         )
-        
-    def get_history(self):
-        # for value in history.values:
-        # value: GenerationSnapshot ну и там делаете графики
-        return dict(list(self.history.items())[:self.cur_generation])
 
 if __name__ == "__main__":
     ga = GeneticAlgorithm([9, 21, 19, 11, 23, 10, 36, 34, 24, 9, 27, 44, 46, 14, 42, 10, 5, 43, 42, 7])
