@@ -57,9 +57,9 @@ class GAParamsPanel(QGroupBox):
         return HintLabel(text, tooltip)
 
     def set_default_values(self) -> None:
-        self.population_spin.setValue(100)
-        self.generations_spin.setValue(200)
-        self.mutation_spin.setValue(0.05)
+        self.population_spin.setValue(200)
+        self.generations_spin.setValue(100)
+        self.mutation_spin.setValue(0.01)
         self.crossover_spin.setValue(0.8)
 
     def _setup_ui(self) -> None:
@@ -67,8 +67,8 @@ class GAParamsPanel(QGroupBox):
 
         # Размер популяции
         self.population_spin = QSpinBox()
-        self.population_spin.setRange(10, 2000)
-        self.population_spin.setValue(100)
+        self.population_spin.setRange(10, 1000)
+        self.population_spin.setValue(200)
 
         population_text = "Размер популяции:"
         population_label = self.make_hint_label(
@@ -79,8 +79,8 @@ class GAParamsPanel(QGroupBox):
 
         # Число поколений
         self.generations_spin = QSpinBox()
-        self.generations_spin.setRange(10, 5000)
-        self.generations_spin.setValue(200)
+        self.generations_spin.setRange(10, 1000)
+        self.generations_spin.setValue(100)
 
         generation_text = "Число поколений:"
         generation_label = self.make_hint_label(
@@ -93,7 +93,7 @@ class GAParamsPanel(QGroupBox):
         self.mutation_spin = QDoubleSpinBox()
         self.mutation_spin.setRange(0.0, 1.0)
         self.mutation_spin.setSingleStep(0.01)
-        self.mutation_spin.setValue(0.05)
+        self.mutation_spin.setValue(0.01)
 
         mutation_text = "Вероятность мутации:"
         mutation_label = self.make_hint_label(mutation_text, TOOLTIP_MAP["mutation"])
@@ -102,7 +102,7 @@ class GAParamsPanel(QGroupBox):
         # Вероятность скрещивания
         self.crossover_spin = QDoubleSpinBox()
         self.crossover_spin.setRange(0.0, 1.0)
-        self.crossover_spin.setSingleStep(0.05)
+        self.crossover_spin.setSingleStep(0.01)
         self.crossover_spin.setValue(0.8)
 
         crossover_text = "Вероятность скрещивания:"

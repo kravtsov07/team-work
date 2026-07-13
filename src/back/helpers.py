@@ -1,5 +1,22 @@
 from random import randint
+from dataclasses import dataclass
 
+@dataclass
+class GenerationSnapshot:
+    generation: int  # номер поколения
+    best_cost: int  # лучшая стоимость
+    mean_cost: float  # средняя стоимость
+    best_individual: list[int]  # хромосома лучшего решения
+    population: list[list[int]]
+    
+@dataclass
+class PlottingData:
+    x: list[int]
+    target_cost: float
+    greedy_cost: float
+    best_cost: list[int]
+    mean_cost: list[float]
+    best_order: str
 
 def get_data_from_file(file_path: str) -> list[list[int]]:
     matrices = []
@@ -45,3 +62,44 @@ def dimensions_to_pairs(dimensions: list[int]) -> list[list[int]]:
         matrices.append([dimensions[i], dimensions[i + 1]])
 
     return matrices
+
+def calculate_min_cost(dimensions: list[int]) -> int:
+
+    # считает точную минимальную стоимость перебором
+    n = len(dimensions) - 1
+    if n <= 0:
+        return 0
+
+    dp = [[0] * n for _ in range(n)]
+
+    for l in range(2, n + 1):
+        for i in range(n - l + 1):
+            j = i + l - 1
+            dp[i][j] = float("inf")
+
+            for k in range(i, j):
+                cost = (
+                    dp[i][k]
+                    + dp[k + 1][j]
+                    + dimensions[i] * dimensions[k + 1] * dimensions[j + 1]
+                )
+
+                if cost < dp[i][j]:
+                    dp[i][j] = cost
+
+    return dp[0][n - 1]
+
+def greedy_cost(dimensions: list[int]) -> int:
+    dims = dimensions.copy()
+    cost = 0
+
+    while len(dims) > 2:
+        best_i = min(
+            range(len(dims) - 2),
+            key=lambda i: dims[i] * dims[i + 1] * dims[i + 2],
+        )
+
+        cost += dims[best_i] * dims[best_i + 1] * dims[best_i + 2]
+        dims.pop(best_i + 1)
+
+    return cost

@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QFormLayout, QGroupBox, QLabel
 
-from src.back.linker import PlottingData
+from src.back.helpers import PlottingData
 
 
 class ResultsPanel(QGroupBox):

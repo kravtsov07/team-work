@@ -10,17 +10,19 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from src.back.linker import PlottingData, get_plot_data
+from src.back.helpers import PlottingData
+from src.back.GA import GeneticAlgorithm
 from src.gui.pages.choice_board import ChoiceBoard
 from src.gui.pages.param_setter import GAParamsPanel
 from src.gui.pages.results_panel import ResultsPanel
-
+from src.back.helpers import pairs_to_dimensions
 
 class DashboardPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.matrices: list[list[int]] = []
         self._setup_ui()
+        self.ga: GeneticAlgorithm
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
@@ -120,12 +122,20 @@ class DashboardPage(QWidget):
         return True
 
     def _on_generate_clicked(self):
-        self.matrices = self.choice_board.get_matrices()
+        matr = self.choice_board.get_matrices()
+        if self.matrices != matr:
+            self.matrices = matr
+            self.ga = GeneticAlgorithm(pairs_to_dimensions(self.matrices))
+        
         params = self.param_setter.get_params()
+        
         if not self._validate_input():
             return
 
-        plot_data = get_plot_data(self.matrices, params)
+        self.ga.set_params(params)
+        self.ga.evolution(params.steps)
+        
+        plot_data = self.ga.get_plot_data()
         self._refresh_plot(plot_data)
 
     def _set_player_enabled(self, enabled: bool) -> None:
@@ -133,23 +143,28 @@ class DashboardPage(QWidget):
             button.setEnabled(enabled)
 
     def _on_player_toggle(self, enabled: bool) -> None:
-        self.player_toggle.setText("ON" if enabled else "OFF")
+        self.player_toggle.setText("Вкл" if enabled else "Выкл")
         self._set_player_enabled(enabled)
 
     def _on_refresh_clicked(self):
         self.param_setter.set_default_values()
 
     def _on_first_step_clicked(self):
-        pass
+        self.ga.go_first_generate()
+        self._refresh_plot(self.ga.get_plot_data())
 
     def _on_prev_step_clicked(self):
-        pass
-
+        self.ga.go_prev_generate()
+        self._refresh_plot(self.ga.get_plot_data())
+        
     def _on_next_step_clicked(self):
-        pass
+        self.ga.go_next_generate()
+        self._refresh_plot(self.ga.get_plot_data())
 
     def _on_last_step_clicked(self):
-        pass
+        params = self.param_setter.get_params()
+        self.ga.go_last_generate(params.steps)
+        self._refresh_plot(self.ga.get_plot_data())
 
     def _refresh_plot(self, plot_data: PlottingData):
         self.plot_widget.clear()
@@ -171,11 +186,19 @@ class DashboardPage(QWidget):
             name="Среднее значение поколения",
         )
 
+        # график точного минимума
         self.plot_widget.plot(
             plot_data.x,
             [1] * len(plot_data.x),
             pen=pg.mkPen(color="magenta", width=3),
             name="Целевое отношение",
+        )
+        
+        self.plot_widget.plot(
+            plot_data.x,
+            [plot_data.target_cost/plot_data.greedy_cost] * len(plot_data.x),
+            pen=pg.mkPen(color="green", width=3),
+            name="Верхняя оценка"
         )
 
         self.result_page.update_results(plot_data)
