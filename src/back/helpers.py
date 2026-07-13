@@ -1,5 +1,6 @@
-from random import randint
 from dataclasses import dataclass
+from random import randint
+
 
 @dataclass
 class GenerationSnapshot:
@@ -8,7 +9,8 @@ class GenerationSnapshot:
     mean_cost: float  # средняя стоимость
     best_individual: list[int]  # хромосома лучшего решения
     population: list[list[int]]
-    
+
+
 @dataclass
 class PlottingData:
     x: list[int]
@@ -16,7 +18,8 @@ class PlottingData:
     greedy_cost: float
     best_cost: list[int]
     mean_cost: list[float]
-    best_order: str
+    best_order: list[int]
+
 
 def get_data_from_file(file_path: str) -> list[list[int]]:
     matrices = []
@@ -63,6 +66,7 @@ def dimensions_to_pairs(dimensions: list[int]) -> list[list[int]]:
 
     return matrices
 
+
 def calculate_min_cost(dimensions: list[int]) -> int:
 
     # считает точную минимальную стоимость перебором
@@ -88,6 +92,7 @@ def calculate_min_cost(dimensions: list[int]) -> int:
                     dp[i][j] = cost
 
     return dp[0][n - 1]
+
 
 def greedy_cost(dimensions: list[int]) -> int:
     dims = dimensions.copy()

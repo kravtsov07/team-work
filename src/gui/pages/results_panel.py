@@ -1,6 +1,8 @@
-from PySide6.QtWidgets import QFormLayout, QGroupBox, QLabel
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QFormLayout, QGroupBox, QLabel, QPushButton
 
-from src.back.helpers import PlottingData
+from src.back.linker import PlottingData
+from src.gui.pages.mult_order import MultOrder
 
 
 class ResultsPanel(QGroupBox):
@@ -24,6 +26,11 @@ class ResultsPanel(QGroupBox):
         self.order_label = QLabel()
         self.order_label.setWordWrap(True)
         form.addRow("Порядок умножения:", self.order_label)
+
+        self.show_tree_button = QPushButton("Показать дерево умножения")
+        self.show_tree_button.setEnabled(False)
+        self.show_tree_button.clicked.connect(self._show_mult_tree)
+        form.addRow(self.show_tree_button)
 
     def clear(self):
         self.best_cost_label.setText("—")
@@ -50,4 +57,29 @@ class ResultsPanel(QGroupBox):
         )
         self.converged_label.setText(str(converged_gen))
 
-        self.order_label.setText(plot_data.best_order)
+        self.order_label.setText(str(plot_data.best_order))
+        self._order = plot_data.best_order
+        self.show_tree_button.setEnabled(True)
+        self._make_selectable()
+
+    def _make_selectable(self):
+        flags = (
+            Qt.TextInteractionFlag.TextSelectableByMouse
+            | Qt.TextInteractionFlag.TextSelectableByKeyboard
+        )
+
+        for label in (
+            self.best_cost_label,
+            self.ratio_label,
+            self.converged_label,
+            self.order_label,
+        ):
+            label.setTextInteractionFlags(flags)
+
+    def _show_mult_tree(self):
+        if not self._order:
+            return
+
+        dialog = MultOrder(self)
+        dialog.set_snapshot(self._order)
+        dialog.exec()

@@ -1,3 +1,5 @@
+from enum import Enum
+
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -10,17 +12,27 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from src.back.helpers import PlottingData
 from src.back.GA import GeneticAlgorithm
+from src.back.helpers import PlottingData, pairs_to_dimensions
 from src.gui.pages.choice_board import ChoiceBoard
 from src.gui.pages.param_setter import GAParamsPanel
 from src.gui.pages.results_panel import ResultsPanel
-from src.back.helpers import pairs_to_dimensions
+
+
+class Mode(Enum):
+    REG = 0
+    ITER = 1
+
 
 class DashboardPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.matrices: list[list[int]] = []
+        self.mode: Mode = Mode.REG
+        self.plot_data: PlottingData | None = None
+        self.gen_line: pg.InfiniteLine | None = None
+        self.cur_gen: int = 0
+        self.last_gen: int = 0
         self._setup_ui()
         self.ga: GeneticAlgorithm
 
@@ -82,6 +94,10 @@ class DashboardPage(QWidget):
         self.plot_widget.showGrid(x=True, y=True)
         right_layout.addWidget(self.plot_widget, 1)
 
+        self.gen_label = QLabel("Поколение: .../...")
+        self.gen_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        right_layout.addWidget(self.gen_label)
+
         player_layout = QHBoxLayout()  # Кнопки плеера
         self.first_step_button = QPushButton("«")
         self.prev_step_button = QPushButton("<")
@@ -126,15 +142,15 @@ class DashboardPage(QWidget):
         if self.matrices != matr:
             self.matrices = matr
             self.ga = GeneticAlgorithm(pairs_to_dimensions(self.matrices))
-        
+
         params = self.param_setter.get_params()
-        
+
         if not self._validate_input():
             return
 
         self.ga.set_params(params)
         self.ga.evolution(params.steps)
-        
+
         plot_data = self.ga.get_plot_data()
         self._refresh_plot(plot_data)
 
@@ -145,6 +161,7 @@ class DashboardPage(QWidget):
     def _on_player_toggle(self, enabled: bool) -> None:
         self.player_toggle.setText("Вкл" if enabled else "Выкл")
         self._set_player_enabled(enabled)
+        self.mode = Mode.ITER if enabled else Mode.REG
 
     def _on_refresh_clicked(self):
         self.param_setter.set_default_values()
@@ -156,7 +173,7 @@ class DashboardPage(QWidget):
     def _on_prev_step_clicked(self):
         self.ga.go_prev_generate()
         self._refresh_plot(self.ga.get_plot_data())
-        
+
     def _on_next_step_clicked(self):
         self.ga.go_next_generate()
         self._refresh_plot(self.ga.get_plot_data())
@@ -168,20 +185,18 @@ class DashboardPage(QWidget):
 
     def _refresh_plot(self, plot_data: PlottingData):
         self.plot_widget.clear()
+        self.gen_line = None
         self.plot_widget.addLegend(offset=(10, 10))
 
-        # график лучшего значения
         self.plot_widget.plot(
             plot_data.x,
-            [plot_data.target_cost / best_cost for best_cost in plot_data.best_cost],
+            [plot_data.target_cost / c for c in plot_data.best_cost],
             pen=pg.mkPen(color="dodgerblue", width=3),
             name="Лучшее значение поколения",
         )
-
-        # график среднего значения
         self.plot_widget.plot(
             plot_data.x,
-            [plot_data.target_cost / mean_cost for mean_cost in plot_data.mean_cost],
+            [plot_data.target_cost / c for c in plot_data.mean_cost],
             pen=pg.mkPen(color="lightcoral", width=3),
             name="Среднее значение поколения",
         )
@@ -193,12 +208,15 @@ class DashboardPage(QWidget):
             pen=pg.mkPen(color="magenta", width=3),
             name="Целевое отношение",
         )
-        
+
         self.plot_widget.plot(
             plot_data.x,
-            [plot_data.target_cost/plot_data.greedy_cost] * len(plot_data.x),
+            [plot_data.target_cost / plot_data.greedy_cost] * len(plot_data.x),
             pen=pg.mkPen(color="green", width=3),
-            name="Верхняя оценка"
+            name="Верхняя оценка",
         )
 
         self.result_page.update_results(plot_data)
+
+    def _update_label(self) -> None:
+        self.gen_label.setText(f"Поколение: {self.cur_gen}/{self.last_gen}")
