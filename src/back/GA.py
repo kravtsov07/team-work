@@ -35,6 +35,11 @@ class GeneticAlgorithm:
         self.set_population_size(params.population_size)
 
     def set_population_size(self, pop_size: int):
+        if pop_size >= self.population_size:
+            self.population.extend([self._generate_individual() for _ in range(pop_size - self.population_size)])
+        else:
+            self.population.sort(key=lambda ind: self._calculate_cost(ind))
+            self.population = self.population[:pop_size]
         self.population_size = pop_size
 
     def set_p_c(self, p_c: float):
@@ -182,6 +187,8 @@ class GeneticAlgorithm:
             print("задайте размер популяции гнилы еб*ные")
 
     def go_last_generate(self, number_last_gen: int):
+        if number_last_gen < self.cur_generation: return
+        
         self.evolution(number_last_gen - self.cur_generation)
 
     def degradation(self, steps: int):
@@ -205,19 +212,3 @@ class GeneticAlgorithm:
             mean_cost=[snap.mean_cost for snap in self.get_history().values()],
             best_order=self.get_history()[self.cur_generation].best_individual,
         )
-
-
-if __name__ == "__main__":
-    ga = GeneticAlgorithm(
-        [9, 21, 19, 11, 23, 10, 36, 34, 24, 9, 27, 44, 46, 14, 42, 10, 5, 43, 42, 7]
-    )
-    ga.set_population_size(100)
-    ga.evolution(100)
-    last_snap = ga.history[ga.cur_generation]
-    min_cost = ga.get_min_cost()
-
-    print(f"Финальное поколение: {last_snap.generation}")
-    print(f"Ожидаемый результат: {min_cost}")
-    print(f"Лучший кост: {last_snap.best_cost}")
-    print(f"Средний кост: {last_snap.mean_cost}")
-    print(f"Лучшее решение: {last_snap.best_individual}")

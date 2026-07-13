@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFormLayout, QGroupBox, QLabel, QPushButton
 
-from src.back.linker import PlottingData
+from src.back.helpers import PlottingData
 from src.gui.pages.mult_order import MultOrder
 
 
