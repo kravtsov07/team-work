@@ -82,7 +82,6 @@ class ManualInputDialog(QDialog):
 
         self._update_status()
 
-    # TODO: проверить, возможно слишком дорого обходится
     def _reload_list(self):
         self.matrices_list_widget.clear()
         for i, (rows, cols) in enumerate(self.matrices, start=1):

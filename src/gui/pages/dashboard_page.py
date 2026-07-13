@@ -1,5 +1,3 @@
-from enum import Enum
-
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -19,16 +17,10 @@ from src.gui.pages.param_setter import GAParamsPanel
 from src.gui.pages.results_panel import ResultsPanel
 
 
-class Mode(Enum):
-    REG = 0
-    ITER = 1
-
-
 class DashboardPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.matrices: list[list[int]] = []
-        self.mode: Mode = Mode.REG
         self.plot_data: PlottingData | None = None
         self.gen_line: pg.InfiniteLine | None = None
         self.cur_gen: int = 0
@@ -60,15 +52,6 @@ class DashboardPage(QWidget):
         button_layout.addWidget(self.generate_button)
 
         left_layout.addLayout(button_layout)
-
-        toggle_layout = QHBoxLayout()
-        toggle_layout.addWidget(QLabel("Плеер:"))
-        self.player_toggle = QPushButton("OFF")
-        self.player_toggle.setCheckable(True)
-        self.player_toggle.toggled.connect(self._on_player_toggle)
-        toggle_layout.addWidget(self.player_toggle)
-        toggle_layout.addStretch()
-        left_layout.addLayout(toggle_layout)
 
         left_layout.addStretch()
         left_widget.setMinimumWidth(320)
@@ -139,29 +122,33 @@ class DashboardPage(QWidget):
 
     def _on_generate_clicked(self):
         matr = self.choice_board.get_matrices()
-        if self.matrices != matr:
+
+        if self.matrices != matr and matr:
             self.matrices = matr
             self.ga = GeneticAlgorithm(pairs_to_dimensions(self.matrices))
 
         params = self.param_setter.get_params()
-
         if not self._validate_input():
             return
-
         self.ga.set_params(params)
         self.ga.evolution(params.steps)
 
         plot_data = self.ga.get_plot_data()
         self._refresh_plot(plot_data)
+        self._update_player_buttons()
 
     def _set_player_enabled(self, enabled: bool) -> None:
         for button in self._player_buttons:
             button.setEnabled(enabled)
 
-    def _on_player_toggle(self, enabled: bool) -> None:
-        self.player_toggle.setText("Вкл" if enabled else "Выкл")
-        self._set_player_enabled(enabled)
-        self.mode = Mode.ITER if enabled else Mode.REG
+    def _update_player_buttons(self) -> None:
+        at_first = self.cur_gen <= 1
+        at_last = self.cur_gen >= self.last_gen
+
+        self.first_step_button.setEnabled(not at_first)
+        self.prev_step_button.setEnabled(not at_first)
+        self.next_step_button.setEnabled(not at_last)
+        self.last_step_button.setEnabled(not at_last)
 
     def _on_refresh_clicked(self):
         self.param_setter.set_default_values()
@@ -217,6 +204,11 @@ class DashboardPage(QWidget):
         )
 
         self.result_page.update_results(plot_data)
+
+        self.cur_gen = self.ga.cur_generation
+        self.last_gen = len(self.ga.history)
+        self._update_label()
+        self._update_player_buttons()
 
     def _update_label(self) -> None:
         self.gen_label.setText(f"Поколение: {self.cur_gen}/{self.last_gen}")
