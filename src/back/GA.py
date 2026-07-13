@@ -36,7 +36,12 @@ class GeneticAlgorithm:
 
     def set_population_size(self, pop_size: int):
         if pop_size >= self.population_size:
-            self.population.extend([self._generate_individual() for _ in range(pop_size - self.population_size)])
+            self.population.extend(
+                [
+                    self._generate_individual()
+                    for _ in range(pop_size - self.population_size)
+                ]
+            )
         else:
             self.population.sort(key=lambda ind: self._calculate_cost(ind))
             self.population = self.population[:pop_size]
@@ -184,11 +189,12 @@ class GeneticAlgorithm:
         if self.population:
             self.evolution(steps=1)
         else:
-            print("задайте размер популяции гнилы еб*ные")
+            print("задайте размер популяции")
 
     def go_last_generate(self, number_last_gen: int):
-        if number_last_gen < self.cur_generation: return
-        
+        if number_last_gen < self.cur_generation:
+            return
+
         self.evolution(number_last_gen - self.cur_generation)
 
     def degradation(self, steps: int):
