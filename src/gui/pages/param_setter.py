@@ -67,7 +67,7 @@ class GAParamsPanel(QGroupBox):
 
         # Размер популяции
         self.population_spin = QSpinBox()
-        self.population_spin.setRange(10, 1000)
+        self.population_spin.setRange(1, 1000)
         self.population_spin.setValue(200)
 
         population_text = "Размер популяции:"
@@ -79,7 +79,7 @@ class GAParamsPanel(QGroupBox):
 
         # Число поколений
         self.generations_spin = QSpinBox()
-        self.generations_spin.setRange(10, 1000)
+        self.generations_spin.setRange(1, 1000)
         self.generations_spin.setValue(100)
 
         generation_text = "Число поколений:"
@@ -92,7 +92,7 @@ class GAParamsPanel(QGroupBox):
         # Вероятность мутации
         self.mutation_spin = QDoubleSpinBox()
         self.mutation_spin.setRange(0.0, 1.0)
-        self.mutation_spin.setSingleStep(0.01)
+        self.mutation_spin.setSingleStep(0.001)
         self.mutation_spin.setValue(0.01)
 
         mutation_text = "Вероятность мутации:"

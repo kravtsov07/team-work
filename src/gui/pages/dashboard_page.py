@@ -135,7 +135,6 @@ class DashboardPage(QWidget):
 
         plot_data = self.ga.get_plot_data()
         self._refresh_plot(plot_data)
-        self._update_player_buttons()
 
     def _set_player_enabled(self, enabled: bool) -> None:
         for button in self._player_buttons:
@@ -147,8 +146,8 @@ class DashboardPage(QWidget):
 
         self.first_step_button.setEnabled(not at_first)
         self.prev_step_button.setEnabled(not at_first)
-        self.next_step_button.setEnabled(not at_last)
-        self.last_step_button.setEnabled(not at_last)
+        self.next_step_button.setEnabled(1)
+        self.last_step_button.setEnabled(1)
 
     def _on_refresh_clicked(self):
         self.param_setter.set_default_values()
@@ -211,4 +210,4 @@ class DashboardPage(QWidget):
         self._update_player_buttons()
 
     def _update_label(self) -> None:
-        self.gen_label.setText(f"Поколение: {self.cur_gen}/{self.last_gen}")
+        self.gen_label.setText(f"Поколение: {self.cur_gen}")
