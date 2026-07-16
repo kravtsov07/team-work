@@ -77,7 +77,7 @@ class DashboardPage(QWidget):
         self.plot_widget.showGrid(x=True, y=True)
         right_layout.addWidget(self.plot_widget, 1)
 
-        self.gen_label = QLabel("Поколение: .../...")
+        self.gen_label = QLabel("Поколение: ...")
         self.gen_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         right_layout.addWidget(self.gen_label)
 
@@ -142,12 +142,11 @@ class DashboardPage(QWidget):
 
     def _update_player_buttons(self) -> None:
         at_first = self.cur_gen <= 1
-        at_last = self.cur_gen >= self.last_gen
 
         self.first_step_button.setEnabled(not at_first)
         self.prev_step_button.setEnabled(not at_first)
-        self.next_step_button.setEnabled(1)
-        self.last_step_button.setEnabled(1)
+        self.next_step_button.setEnabled(True)
+        self.last_step_button.setEnabled(True)
 
     def _on_refresh_clicked(self):
         self.param_setter.set_default_values()
