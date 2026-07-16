@@ -192,9 +192,9 @@ class GeneticAlgorithm:
             print("задайте размер популяции")
 
     def go_last_generate(self, number_last_gen: int):
-        if number_last_gen < self.cur_generation:
+        if number_last_gen <= self.cur_generation:
+            self.evolution(100)
             return
-
         self.evolution(number_last_gen - self.cur_generation)
 
     def degradation(self, steps: int):
