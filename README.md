@@ -165,7 +165,7 @@ team-work/
 │           ├── results_panel.py     # Панель результатов
 │           ├── mult_order.py        # Дерево умножения
 │           └── manual_input_dialog.py
-└── diagrams/               # UML-диаграммы архитектуры
+└── diagrams/                        # UML-диаграммы архитектуры
     ├── diagram1_application_shell.png
     ├── diagram2_backend.png
     ├── diagram3_input_config.png
